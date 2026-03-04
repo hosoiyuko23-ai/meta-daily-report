@@ -231,24 +231,24 @@ const TAB_COLORS = ['#1a73e8','#188038','#e37400','#a142f4','#d93025','#0097a7',
 // Columns (CPC・CTR removed)
 const COLS = [
   { k:'date',  label:'日付',             fmt:'date', w:128, sortable:true  },
-  { k:'spend', label:'A消化金額(JPY)',    fmt:'int',  w:90,  sortable:true  },
-  { k:'clicks',label:'Bクリック',         fmt:'int',  w:66,  sortable:true  },
-  { k:'imp',   label:'Cインプレッション', fmt:'int',  w:88,  sortable:true  },
+  { k:'spend', label:'消化金額',    fmt:'int',  w:90,  sortable:true  },
+  { k:'clicks',label:'クリック',         fmt:'int',  w:66,  sortable:true  },
+  { k:'imp',   label:'IMP', fmt:'int',  w:88,  sortable:true  },
   { k:'cpm',   label:'CPM',              fmt:'int',  w:62,  sortable:true,  calc:true },
-  { k:'cv',    label:'CV',               fmt:'dec1', w:50,  sortable:true  },
+  { k:'cv',    label:'CV',               fmt:'int',  w:50,  sortable:true  },
   { k:'cpa',   label:'CPA',              fmt:'int',  w:68,  sortable:true,  calc:true },
-  { k:'cvr',   label:'CVR',              fmt:'pct',  w:55,  sortable:true,  calc:true },
+  { k:'cvr',   label:'CVR',              fmt:'pct0', w:55,  sortable:true,  calc:true },
   { k:'mcv',   label:'MCV',              fmt:'int',  w:50,  sortable:true  },
   { k:'mcpa',  label:'MCPA',             fmt:'int',  w:68,  sortable:true,  calc:true },
-  { k:'mcvr',  label:'MCVR',             fmt:'pct',  w:55,  sortable:true,  calc:true },
+  { k:'mcvr',  label:'MCVR',             fmt:'pct0', w:55,  sortable:true,  calc:true },
   { k:'memo',  label:'メモ',              fmt:'memo', w:null, sortable:false, flex:true },
 ];
 
 const MAP_FIELDS = [
   { k:'date',  label:'日付',              req:true  },
-  { k:'spend', label:'A消化金額',         req:true  },
-  { k:'clicks',label:'Bクリック',         req:true  },
-  { k:'imp',   label:'Cインプレッション', req:true  },
+  { k:'spend', label:'消化金額',         req:true  },
+  { k:'clicks',label:'クリック',         req:true  },
+  { k:'imp',   label:'IMP', req:true  },
   { k:'cv',    label:'CV',               req:false, hasDateCol:true },
   { k:'mcv',   label:'MCV',              req:false, hasDateCol:true },
 ];
@@ -663,6 +663,7 @@ function doSave() {
   cfg.sid = ssId;
   saveCfg();
   cloudSaveCfg(cfg); // クラウドにも非同期保存
+  invalidateTotalCaches();
   showScreen('screen-dash');
   buildProjTabs();
   if (cfg.projects.length > 0) selectProj(cfg.projects[0].id);
@@ -687,6 +688,15 @@ function buildProjTabs() {
     t.onclick = function() { selectProj(p.id); };
     bar.appendChild(t);
   });
+  // 総合タブ（複数プロジェクトがある場合のみ）
+  if (cfg.projects.length > 1) {
+    const t = document.createElement('div');
+    t.className = 'ptab';
+    t.dataset.id = '__grand__';
+    t.textContent = '📊 総合';
+    t.onclick = function() { selectProj('__grand__'); };
+    bar.appendChild(t);
+  }
 }
 
 function selectProj(id) {
@@ -695,6 +705,12 @@ function selectProj(id) {
   document.querySelectorAll('.ptab').forEach(function(t) {
     t.classList.toggle('on', t.dataset.id === id);
   });
+  // 総合タブ
+  if (id === '__grand__') {
+    buildAccTabsGrand();
+    selectAcc('__grand__');
+    return;
+  }
   const proj = cfg.projects.find(function(p) { return p.id === id; });
   if (!proj) return;
   buildAccTabs(proj);
@@ -717,6 +733,34 @@ function buildAccTabs(proj) {
     t.onclick = function() { selectAcc(acc.id); };
     bar.appendChild(t);
   });
+  // 合計タブ（アカウントが複数ある場合のみ）
+  if (proj.accounts.length > 1) {
+    var pid = proj.id;
+    var t = document.createElement('div');
+    t.className = 'atab';
+    t.dataset.id = '__total__' + pid;
+    var dot = document.createElement('span');
+    dot.className = 'dot';
+    dot.style.background = '#9e9e9e';
+    t.appendChild(dot);
+    t.appendChild(document.createTextNode('合計'));
+    t.onclick = function() { selectAcc('__total__' + pid); };
+    bar.appendChild(t);
+  }
+}
+
+function buildAccTabsGrand() {
+  var bar = document.getElementById('acc-bar');
+  bar.innerHTML = '';
+  var t = document.createElement('div');
+  t.className = 'atab on';
+  t.dataset.id = '__grand__';
+  var dot = document.createElement('span');
+  dot.className = 'dot';
+  dot.style.background = '#1a73e8';
+  t.appendChild(dot);
+  t.appendChild(document.createTextNode('全プロジェクト合計'));
+  bar.appendChild(t);
 }
 
 function selectAcc(id) {
@@ -728,9 +772,67 @@ function selectAcc(id) {
   loadAcc(id);
 }
 
+// 合計・総合タブのキャッシュを無効化（アカウント設定変更後などに呼ぶ）
+function invalidateTotalCaches() {
+  Object.keys(mergedCache).forEach(function(k) {
+    if (k === '__grand__' || k.indexOf('__total__') === 0) delete mergedCache[k];
+  });
+}
+
 async function loadAcc(id) {
   showLoading();
   try {
+    // ── 総合タブ ──
+    if (id === '__grand__') {
+      // 全プロジェクトの全アカウントを読み込んでから合算
+      var allAccIds = [];
+      cfg.projects.forEach(function(p) { p.accounts.forEach(function(a) { allAccIds.push(a.id); }); });
+      for (var i = 0; i < allAccIds.length; i++) {
+        var aid = allAccIds[i];
+        if (!mergedCache[aid]) {
+          var acc2 = null;
+          cfg.projects.forEach(function(p) { p.accounts.forEach(function(a) { if (a.id === aid) acc2 = a; }); });
+          if (acc2) {
+            var sheetsNeeded2 = [];
+            MAP_FIELDS.forEach(function(f) { var sh = (acc2.fieldMap[f.k]||{}).sheet; if (sh && sheetsNeeded2.indexOf(sh)<0) sheetsNeeded2.push(sh); });
+            for (var si = 0; si < sheetsNeeded2.length; si++) await fetchSheet(sheetsNeeded2[si]);
+            mergedCache[aid] = buildRows(acc2);
+          }
+        }
+      }
+      mergedCache['__grand__'] = mergeByDate(allAccIds);
+      initDateRange(mergedCache['__grand__']);
+      renderTable();
+      document.getElementById('sb-updated').textContent = new Date().toLocaleTimeString('ja-JP');
+      return;
+    }
+
+    // ── プロジェクト合計タブ ──
+    if (id.indexOf('__total__') === 0) {
+      var pid = id.replace('__total__', '');
+      var proj = cfg.projects.find(function(p) { return p.id === pid; });
+      if (!proj) { showEmpty('プロジェクトが見つかりません'); return; }
+      var accIds = proj.accounts.map(function(a) { return a.id; });
+      for (var i = 0; i < accIds.length; i++) {
+        var aid = accIds[i];
+        if (!mergedCache[aid]) {
+          var acc3 = proj.accounts.find(function(a) { return a.id === aid; });
+          if (acc3) {
+            var sheetsNeeded3 = [];
+            MAP_FIELDS.forEach(function(f) { var sh = (acc3.fieldMap[f.k]||{}).sheet; if (sh && sheetsNeeded3.indexOf(sh)<0) sheetsNeeded3.push(sh); });
+            for (var si = 0; si < sheetsNeeded3.length; si++) await fetchSheet(sheetsNeeded3[si]);
+            mergedCache[aid] = buildRows(acc3);
+          }
+        }
+      }
+      mergedCache[id] = mergeByDate(accIds);
+      initDateRange(mergedCache[id]);
+      renderTable();
+      document.getElementById('sb-updated').textContent = new Date().toLocaleTimeString('ja-JP');
+      return;
+    }
+
+    // ── 通常アカウント ──
     if (!mergedCache[id]) {
       let acc = null;
       cfg.projects.forEach(function(p) {
@@ -752,6 +854,40 @@ async function loadAcc(id) {
   } catch(e) {
     showEmpty('エラー: ' + e.message);
   }
+}
+
+// 複数アカウントの行を日付キーで合算する
+function mergeByDate(accIds) {
+  var dateMap = {}; // normDate → merged row
+  accIds.forEach(function(aid) {
+    var rows = mergedCache[aid] || [];
+    rows.forEach(function(r) {
+      if (r._tot) return;
+      var dk = normDate(r.date) || r.date;
+      if (!dateMap[dk]) {
+        dateMap[dk] = {
+          _tot: false, _d: r._d, date: r.date,
+          spend: 0, clicks: 0, imp: 0, cv: 0, mcv: 0
+        };
+      }
+      var m = dateMap[dk];
+      m.spend  += isFinite(r.spend)  ? +r.spend  : 0;
+      m.clicks += isFinite(r.clicks) ? +r.clicks : 0;
+      m.imp    += isFinite(r.imp)    ? +r.imp    : 0;
+      m.cv     += isFinite(r.cv)     ? +r.cv     : 0;
+      m.mcv    += isFinite(r.mcv)    ? +r.mcv    : 0;
+    });
+  });
+  // 派生指標を再計算
+  return Object.keys(dateMap).sort().map(function(dk) {
+    var m = dateMap[dk];
+    m.cpm  = m.imp    > 0 ? m.spend / m.imp * 1000 : NaN;
+    m.cpa  = m.cv     > 0 ? m.spend / m.cv         : NaN;
+    m.cvr  = m.mcv    > 0 ? m.cv / m.mcv            : NaN;
+    m.mcpa = m.mcv    > 0 ? m.spend / m.mcv        : NaN;
+    m.mcvr = m.clicks > 0 ? m.mcv / m.clicks       : NaN;
+    return m;
+  });
 }
 
 /* ═══════════════════════════
@@ -848,7 +984,7 @@ function buildRows(acc) {
       mcv:    mcv,
       cpm:  (imp    > 0) ? spend / imp * 1000 : NaN,
       cpa:  (cv     > 0) ? spend / cv         : NaN,
-      cvr:  (clicks > 0) ? cv / clicks        : NaN,
+      cvr:  (mcv    > 0) ? cv / mcv            : NaN,
       mcpa: (mcv    > 0) ? spend / mcv        : NaN,
       mcvr: (clicks > 0) ? mcv / clicks       : NaN,
     });
@@ -862,6 +998,8 @@ function buildRows(acc) {
 function renderTable() {
   const rows = mergedCache[curAcc];
   if (!rows) return;
+  // 合計・総合タブはメモ列を非表示
+  var isTotalTab = (curAcc === '__grand__' || curAcc.indexOf('__total__') === 0);
 
   const fromStr = document.getElementById('d-from').value;
   const toStr   = document.getElementById('d-to').value;
@@ -896,6 +1034,7 @@ function renderTable() {
   const thead = document.createElement('thead');
   const hr = document.createElement('tr');
   COLS.forEach(function(col) {
+    if (isTotalTab && col.k === 'memo') return; // 合計タブはメモ列スキップ
     const th = document.createElement('th');
     if (col.flex) { th.style.width = '100%'; }
     else if (col.w) { th.style.minWidth = col.w + 'px'; th.style.maxWidth = col.w + 'px'; }
@@ -924,7 +1063,7 @@ function renderTable() {
   if (data.length === 0) {
     const tr = document.createElement('tr');
     const td = document.createElement('td');
-    td.colSpan = COLS.length;
+    td.colSpan = isTotalTab ? COLS.length - 1 : COLS.length;
     td.className = 'empty-msg';
     td.textContent = 'データがありません';
     tr.appendChild(td);
@@ -933,6 +1072,7 @@ function renderTable() {
     data.forEach(function(r, ri) {
       const tr = document.createElement('tr');
       COLS.forEach(function(col) {
+        if (isTotalTab && col.k === 'memo') return; // 合計タブはメモ列スキップ
         const td = document.createElement('td');
         if (col.k === 'date') {
           td.textContent = r.date;
@@ -973,7 +1113,9 @@ function renderTable() {
     const tr = document.createElement('tr');
     tr.className = 'totrow';
     COLS.forEach(function(col) {
+      if (isTotalTab && col.k === 'memo') return; // 合計タブはメモ列スキップ
       const td = document.createElement('td');
+      if (isTotalTab) { td.style.padding = '2px 5px'; td.style.fontSize = '11.5px'; }
       if (col.k === 'date') {
         td.textContent = 'TOTAL';
         td.style.textAlign = 'left';
@@ -1007,7 +1149,7 @@ function calcTotal(rows) {
     spend, clicks, imp, cv, mcv,
     cpm:  imp    > 0 ? spend / imp * 1000 : NaN,
     cpa:  cv     > 0 ? spend / cv         : NaN,
-    cvr:  clicks > 0 ? cv / clicks        : NaN,
+    cvr:  mcv    > 0 ? cv / mcv            : NaN,
     mcpa: mcv    > 0 ? spend / mcv        : NaN,
     mcvr: clicks > 0 ? mcv / clicks       : NaN,
   };
@@ -1024,6 +1166,10 @@ function formatVal(fmt, v) {
   if (fmt === 'pct') {
     const n = +v;
     return (n < 1 ? n * 100 : n).toFixed(2) + '%';
+  }
+  if (fmt === 'pct0') {
+    const n = +v;
+    return Math.round(n < 1 ? n * 100 : n) + '%';
   }
   return esc(String(v));
 }
@@ -1093,15 +1239,9 @@ function showEmpty(msg) {
 
 async function doRefresh() {
   if (!curAcc) return;
-  let acc = null;
-  cfg.projects.forEach(function(p) { p.accounts.forEach(function(a) { if (a.id === curAcc) acc = a; }); });
-  if (acc) {
-    MAP_FIELDS.forEach(function(f) {
-      const sh = (acc.fieldMap[f.k] || {}).sheet;
-      if (sh) delete rawCache[sh];
-    });
-  }
-  delete mergedCache[curAcc];
+  // キャッシュ全クリア（合計・総合タブも含む）
+  rawCache = {};
+  mergedCache = {};
   await loadAcc(curAcc);
 }
 
