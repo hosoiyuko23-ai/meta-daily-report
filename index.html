@@ -357,7 +357,13 @@ async function sheetsApi(path) {
 async function fetchPreview(sheet) {
   if (srcPrev[sheet]) return;
   try {
-    const d = await sheetsApi('/values/' + encodeURIComponent(sheet) + '!A1:AZ6');
+    // まず列数確認のためヘッダー1行を無制限取得
+    const hd = await sheetsApi('/values/' + encodeURIComponent(sheet) + '!1:1');
+    const hdrLen = ((hd.values || [[]])[0] || []).length;
+    // 実データ数行も取得（列数確定後）
+    const rows = Math.max(hdrLen > 0 ? 6 : 6, 6);
+    const endCol = hdrLen > 0 ? colAlpha(hdrLen + 5) : 'BZ'; // 実際の列+余裕5列
+    const d = await sheetsApi('/values/' + encodeURIComponent(sheet) + '!A1:' + endCol + rows);
     srcPrev[sheet] = d.values || [];
   } catch(e) { srcPrev[sheet] = []; }
 }
@@ -579,7 +585,11 @@ function buildAccCard(pi, acc, ai) {
     }
     const prev = srcPrev[fm.sheet] || [];
     const hdrRow = prev[fm.hrow - 1] || [];
-    const maxCols = Math.max(prev.reduce(function(m, r) { return Math.max(m, r.length); }, 0), 30);
+    // rawCacheの実データからも最大列数を取得して確実に最終列まで表示
+    const rawRows = rawCache[fm.sheet] || [];
+    const maxFromRaw  = rawRows.reduce(function(m, r) { return Math.max(m, (r||[]).length); }, 0);
+    const maxFromPrev = prev.reduce(function(m, r) { return Math.max(m, r.length); }, 0);
+    const maxCols = Math.max(maxFromPrev, maxFromRaw, 30);
     for (let c = 0; c < maxCols; c++) {
       const opt = document.createElement('option');
       opt.value = String(c);
