@@ -780,7 +780,7 @@ function selectProj(id) {
 function buildAccTabs(proj) {
   const bar = document.getElementById('acc-bar');
   bar.innerHTML = '';
-  // ── 合計タブを最左端に固定（●なし）──
+  // ── 合計タブを最左端に固定（●なし・ドラッグ不可）──
   if (proj.accounts.length > 1) {
     var pid = proj.id;
     var tt = document.createElement('div');
@@ -790,16 +790,57 @@ function buildAccTabs(proj) {
     tt.onclick = function() { selectAcc('__total__' + pid); };
     bar.appendChild(tt);
   }
+  // ── 各アカウントタブ（ドラッグ&ドロップで並び替え）──
   proj.accounts.forEach(function(acc) {
     const t = document.createElement('div');
     t.className = 'atab';
     t.dataset.id = acc.id;
+    t.draggable = true;
     const dot = document.createElement('span');
     dot.className = 'dot';
     dot.style.background = acc.color;
     t.appendChild(dot);
     t.appendChild(document.createTextNode(acc.name));
     t.onclick = function() { selectAcc(acc.id); };
+    t.addEventListener('dragstart', function(e) {
+      e.dataTransfer.setData('accId', acc.id);
+      setTimeout(function() { t.style.opacity = '0.4'; }, 0);
+    });
+    t.addEventListener('dragend', function() {
+      t.style.opacity = '';
+      bar.querySelectorAll('.atab').forEach(function(el) {
+        el.classList.remove('drag-over');
+      });
+    });
+    t.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      if (t.dataset.id.indexOf('__total__') === 0) return;
+      if (t.dataset.id === e.dataTransfer.getData('accId')) return;
+      t.classList.add('drag-over');
+    });
+    t.addEventListener('dragleave', function() {
+      t.classList.remove('drag-over');
+    });
+    t.addEventListener('drop', function(e) {
+      e.preventDefault();
+      t.classList.remove('drag-over');
+      const fromId = e.dataTransfer.getData('accId');
+      if (!fromId || fromId === acc.id) return;
+      var projIdx = cfg.projects.findIndex(function(p) { return p.id === curProj; });
+      if (projIdx < 0) return;
+      var accs = cfg.projects[projIdx].accounts;
+      var fromIdx = accs.findIndex(function(a) { return a.id === fromId; });
+      var toIdx   = accs.findIndex(function(a) { return a.id === acc.id; });
+      if (fromIdx < 0 || toIdx < 0) return;
+      var moved = accs.splice(fromIdx, 1)[0];
+      accs.splice(toIdx, 0, moved);
+      saveCfg();
+      cloudSaveCfg(cfg);
+      buildAccTabs(cfg.projects[projIdx]);
+      document.querySelectorAll('.atab').forEach(function(el) {
+        el.classList.toggle('on', el.dataset.id === curAcc);
+      });
+    });
     bar.appendChild(t);
   });
 }
