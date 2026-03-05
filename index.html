@@ -241,6 +241,8 @@ const COLS = [
   { k:'clicks',label:'クリック',         fmt:'int',  w:66,  sortable:true  },
   { k:'imp',   label:'IMP', fmt:'int',  w:88,  sortable:true  },
   { k:'cpm',   label:'CPM',              fmt:'int',  w:62,  sortable:true,  calc:true },
+  { k:'cpc',   label:'CPC',              fmt:'int',  w:62,  sortable:true,  calc:true },
+  { k:'ctr',   label:'CTR',              fmt:'pct0', w:55,  sortable:true,  calc:true },
   { k:'cv',    label:'CV',               fmt:'int',  w:50,  sortable:true  },
   { k:'cpa',   label:'CPA',              fmt:'int',  w:68,  sortable:true,  calc:true },
   { k:'cvr',   label:'CVR',              fmt:'pct0', w:55,  sortable:true,  calc:true },
@@ -969,6 +971,8 @@ function mergeByDate(accIds) {
   return Object.keys(dateMap).sort().map(function(dk) {
     var m = dateMap[dk];
     m.cpm  = m.imp    > 0 ? m.spend / m.imp * 1000 : NaN;
+    m.cpc  = m.clicks > 0 ? m.spend / m.clicks     : NaN;
+    m.ctr  = m.imp    > 0 ? m.clicks / m.imp       : NaN;
     m.cpa  = m.cv     > 0 ? m.spend / m.cv         : NaN;
     m.cvr  = m.mcv    > 0 ? m.cv / m.mcv            : NaN;
     m.mcpa = m.mcv    > 0 ? m.spend / m.mcv        : NaN;
