@@ -6,11 +6,12 @@
 <title>Metaデイリーレポート</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; font-size: 13px; background: #f1f3f4; color: #202124; height: 100vh; overflow: auto; min-width: 780px; display: flex; flex-direction: column; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; font-size: 13px; background: #f1f3f4; color: #202124; overflow: hidden; }
 
 /* ── SCREENS ── */
 .screen { display: none; }
-.screen.active { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 780px; overflow-x: visible; }
+.screen.active { display: flex; flex-direction: column; width: 100%; height: 100vh; box-sizing: border-box; overflow: hidden; }
 
 /* ── SETUP SCREEN ── */
 #screen-setup { align-items: center; justify-content: center; background: #f1f3f4; }
@@ -62,8 +63,8 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; font-s
 .calc-note { font-size: 11px; color: #1a73e8; background: #e8f0fe; padding: 5px 8px; border-radius: 3px; margin-top: 4px; }
 
 /* ── DASHBOARD SCREEN ── */
-#screen-dash { background: #fff; }
-.topbar { height: 40px; background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 12px; gap: 8px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,.08); min-width: 780px; }
+#screen-dash { background: #fff; overflow-x: auto; overflow-y: hidden; width: 100%; }
+.topbar { height: 40px; background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 12px; gap: 8px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
 .topbar-title { font-size: 14px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tbtn { padding: 5px 10px; background: #fff; border: 1px solid #dadce0; border-radius: 4px; font-size: 12px; color: #3c4043; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
 .tbtn:hover { background: #f1f3f4; }
@@ -71,14 +72,14 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; font-s
 .tbtn.blue:hover { background: #1557b0; }
 
 /* Project tabs */
-.proj-bar { height: 33px; background: #fff; border-bottom: 2px solid #e0e0e0; display: flex; align-items: flex-end; padding: 0 8px; overflow-x: auto; flex-shrink: 0; min-width: 780px; }
+.proj-bar { height: 33px; background: #fff; border-bottom: 2px solid #e0e0e0; display: flex; align-items: flex-end; padding: 0 8px; overflow-x: auto; flex-shrink: 0; }
 .proj-bar::-webkit-scrollbar { height: 0; }
 .ptab { height: 29px; padding: 0 14px; display: flex; align-items: center; font-size: 12px; color: #5f6368; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; margin-bottom: -2px; }
 .ptab:hover { color: #202124; }
 .ptab.on { color: #1a73e8; border-bottom-color: #1a73e8; font-weight: 600; }
 
 /* Account tabs (Sheets style) */
-.acc-bar { height: 33px; background: #f1f3f4; border-bottom: 1px solid #c7c7c7; display: flex; align-items: flex-end; padding: 0 6px; gap: 2px; overflow-x: auto; flex-shrink: 0; min-width: 780px; }
+.acc-bar { height: 33px; background: #f1f3f4; border-bottom: 1px solid #c7c7c7; display: flex; align-items: flex-end; padding: 0 6px; gap: 2px; overflow-x: auto; flex-shrink: 0; }
 .acc-bar::-webkit-scrollbar { height: 0; }
 .atab { height: 29px; padding: 0 13px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #444746; cursor: pointer; border: 1px solid transparent; border-bottom: none; border-radius: 3px 3px 0 0; position: relative; top: 1px; white-space: nowrap; }
 .atab:hover { background: #e8eaed; border-color: #c7c7c7; }
@@ -99,7 +100,7 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; font-s
 .dbar .rowcount { margin-left: auto; font-size: 11px; color: #80868b; }
 
 /* Table */
-.tscroll { flex: 1; overflow: auto; min-height: 0; min-width: 0; }
+.tscroll { flex: 1; overflow-x: auto; overflow-y: auto; min-height: 0; }
 .tscroll::-webkit-scrollbar { width: 10px; height: 10px; }
 .tscroll::-webkit-scrollbar-thumb { background: #c4c7c5; border-radius: 5px; }
 .tscroll::-webkit-scrollbar-track { background: #f1f3f4; }
@@ -1118,12 +1119,15 @@ function renderTable() {
 
   const tscroll = document.getElementById('tscroll');
   const tbl = document.createElement('table');
-  tbl.style.tableLayout = 'auto';
+  tbl.style.tableLayout = 'fixed';
   if (isTotalTab) {
     tbl.style.width = 'auto';
     tbl.style.marginLeft = '0';
   } else {
+    // 全列幅の合計でmin-widthを設定（横スクロール対応）
+    var totalW = COLS.reduce(function(s, col) { return s + (col.w || 80); }, 0) + 220;
     tbl.style.width = '100%';
+    tbl.style.minWidth = totalW + 'px';
   }
 
   // THEAD
