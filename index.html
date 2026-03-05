@@ -6,11 +6,11 @@
 <title>Metaデイリーレポート</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; font-size: 13px; background: #f1f3f4; color: #202124; height: 100vh; overflow-x: auto; overflow-y: hidden; min-width: 640px; display: flex; flex-direction: column; }
+body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; font-size: 13px; background: #f1f3f4; color: #202124; height: 100vh; overflow: auto; min-width: 780px; display: flex; flex-direction: column; }
 
 /* ── SCREENS ── */
 .screen { display: none; }
-.screen.active { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.screen.active { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 780px; overflow-x: visible; }
 
 /* ── SETUP SCREEN ── */
 #screen-setup { align-items: center; justify-content: center; background: #f1f3f4; }
@@ -63,7 +63,7 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; font-s
 
 /* ── DASHBOARD SCREEN ── */
 #screen-dash { background: #fff; }
-.topbar { height: 40px; background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 12px; gap: 8px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,.08); min-width: 640px; }
+.topbar { height: 40px; background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 12px; gap: 8px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,.08); min-width: 780px; }
 .topbar-title { font-size: 14px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tbtn { padding: 5px 10px; background: #fff; border: 1px solid #dadce0; border-radius: 4px; font-size: 12px; color: #3c4043; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
 .tbtn:hover { background: #f1f3f4; }
@@ -71,14 +71,14 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; font-s
 .tbtn.blue:hover { background: #1557b0; }
 
 /* Project tabs */
-.proj-bar { height: 33px; background: #fff; border-bottom: 2px solid #e0e0e0; display: flex; align-items: flex-end; padding: 0 8px; overflow-x: auto; flex-shrink: 0; }
+.proj-bar { height: 33px; background: #fff; border-bottom: 2px solid #e0e0e0; display: flex; align-items: flex-end; padding: 0 8px; overflow-x: auto; flex-shrink: 0; min-width: 780px; }
 .proj-bar::-webkit-scrollbar { height: 0; }
 .ptab { height: 29px; padding: 0 14px; display: flex; align-items: center; font-size: 12px; color: #5f6368; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; margin-bottom: -2px; }
 .ptab:hover { color: #202124; }
 .ptab.on { color: #1a73e8; border-bottom-color: #1a73e8; font-weight: 600; }
 
 /* Account tabs (Sheets style) */
-.acc-bar { height: 33px; background: #f1f3f4; border-bottom: 1px solid #c7c7c7; display: flex; align-items: flex-end; padding: 0 6px; gap: 2px; overflow-x: auto; flex-shrink: 0; }
+.acc-bar { height: 33px; background: #f1f3f4; border-bottom: 1px solid #c7c7c7; display: flex; align-items: flex-end; padding: 0 6px; gap: 2px; overflow-x: auto; flex-shrink: 0; min-width: 780px; }
 .acc-bar::-webkit-scrollbar { height: 0; }
 .atab { height: 29px; padding: 0 13px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #444746; cursor: pointer; border: 1px solid transparent; border-bottom: none; border-radius: 3px 3px 0 0; position: relative; top: 1px; white-space: nowrap; }
 .atab:hover { background: #e8eaed; border-color: #c7c7c7; }
@@ -99,7 +99,7 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; font-s
 .dbar .rowcount { margin-left: auto; font-size: 11px; color: #80868b; }
 
 /* Table */
-.tscroll { flex: 1; overflow: auto; min-height: 0; }
+.tscroll { flex: 1; overflow: auto; min-height: 0; min-width: 0; }
 .tscroll::-webkit-scrollbar { width: 10px; height: 10px; }
 .tscroll::-webkit-scrollbar-thumb { background: #c4c7c5; border-radius: 5px; }
 .tscroll::-webkit-scrollbar-track { background: #f1f3f4; }
@@ -242,7 +242,7 @@ const COLS = [
   { k:'imp',   label:'IMP', fmt:'int',  w:88,  sortable:true  },
   { k:'cpm',   label:'CPM',              fmt:'int',  w:62,  sortable:true,  calc:true },
   { k:'cpc',   label:'CPC',              fmt:'int',  w:62,  sortable:true,  calc:true },
-  { k:'ctr',   label:'CTR',              fmt:'pct0', w:55,  sortable:true,  calc:true },
+  { k:'ctr',   label:'CTR',              fmt:'pct2', w:58,  sortable:true,  calc:true },
   { k:'cv',    label:'CV',               fmt:'int',  w:50,  sortable:true  },
   { k:'cpa',   label:'CPA',              fmt:'int',  w:68,  sortable:true,  calc:true },
   { k:'cvr',   label:'CVR',              fmt:'pct0', w:55,  sortable:true,  calc:true },
@@ -1274,6 +1274,10 @@ function formatVal(fmt, v) {
   if (fmt === 'pct0') {
     const n = +v;
     return Math.round(n < 1 ? n * 100 : n) + '%';
+  }
+  if (fmt === 'pct2') {
+    const n = +v;
+    return (n < 1 ? n * 100 : n).toFixed(2) + '%';
   }
   return esc(String(v));
 }
