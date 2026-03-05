@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<!-- built: 2026-03-05 21:55:28 -->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Metaデイリーレポート</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+/* layout reset */
+html, body { margin:0; padding:0; height:100%; overflow:hidden; }
+body { font-family:'Helvetica Neue',Arial,'Hiragino Sans',sans-serif; font-size:13px; background:#f1f3f4; color:#202124; display:flex; flex-direction:column; }
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
+
+/* ── SETUP SCREEN ── */
+#screen-setup { align-items: center; justify-content: center; background: #f1f3f4; }
+.setup-box { background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.15); padding: 36px 40px; width: 480px; }
+.setup-box h1 { font-size: 18px; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+.logo-icon { width: 24px; height: 24px; background: #1a73e8; border-radius: 4px; color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.setup-box p { font-size: 12px; color: #5f6368; margin-bottom: 24px; line-height: 1.6; }
+.setup-box p a { color: #1a73e8; text-decoration: none; }
+.form-row { margin-bottom: 16px; }
+.form-row label { display: block; font-size: 11px; font-weight: 600; color: #5f6368; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+.form-row input { width: 100%; padding: 8px 10px; border: 1px solid #dadce0; border-radius: 4px; font-size: 13px; outline: none; }
+.form-row input:focus { border-color: #1a73e8; }
+.form-row .note { font-size: 11px; color: #80868b; margin-top: 4px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 18px; border-radius: 4px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid transparent; transition: background .12s; }
+.btn-primary { background: #1a73e8; color: #fff; border-color: #1a73e8; }
+.btn-primary:hover { background: #1557b0; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+.btn-secondary { background: #fff; color: #3c4043; border-color: #dadce0; }
+.btn-secondary:hover { background: #f1f3f4; }
+.btn-danger { background: #fff; color: #c5221f; border-color: #f5c6c3; }
+.btn-danger:hover { background: #fce8e6; }
+.err { color: #c5221f; font-size: 12px; margin-top: 8px; min-height: 18px; }
+
+/* ── MANAGER SCREEN ── */
+#screen-mgr { background: #f1f3f4; overflow: hidden; }
+.mgr-wrap { display: flex; flex-direction: column; height: 100%; }
+.mgr-header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 14px 24px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.mgr-header h2 { font-size: 16px; font-weight: 600; flex: 1; }
+.mgr-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+.mgr-footer { background: #fff; border-top: 1px solid #e0e0e0; padding: 12px 24px; display: flex; justify-content: flex-end; gap: 8px; flex-shrink: 0; }
+
+.proj-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 12px; overflow: hidden; }
+.proj-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f8f9fa; border-bottom: 1px solid #e8eaed; }
+.proj-head input[type=text] { flex: 1; border: none; background: transparent; font-size: 13px; font-weight: 600; outline: none; }
+.proj-body { padding: 12px 14px; }
+
+.acc-card { border: 1px solid #e8eaed; border-radius: 5px; padding: 12px; margin-bottom: 8px; background: #fafafa; }
+.acc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.acc-head input[type=text] { flex: 1; padding: 5px 8px; border: 1px solid #dadce0; border-radius: 4px; font-size: 13px; font-weight: 500; outline: none; }
+.acc-head input[type=text]:focus { border-color: #1a73e8; }
+
+.field-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 8px; }
+.field-table th { background: #f3f3f3; padding: 4px 8px; text-align: left; border: 1px solid #e0e0e0; font-weight: 600; color: #5f6368; font-size: 11px; white-space: nowrap; }
+.field-table td { padding: 4px 6px; border: 1px solid #e8eaed; vertical-align: middle; }
+.field-table td:first-child { font-weight: 600; background: #f9f9f9; white-space: nowrap; width: 120px; }
+.field-table select { width: 100%; padding: 3px 5px; border: 1px solid #dadce0; border-radius: 3px; font-size: 11.5px; outline: none; background: #fff; }
+.field-table select:focus { border-color: #1a73e8; }
+.field-table input[type=number] { width: 55px; padding: 3px 5px; border: 1px solid #dadce0; border-radius: 3px; font-size: 12px; outline: none; }
+.calc-note { font-size: 11px; color: #1a73e8; background: #e8f0fe; padding: 5px 8px; border-radius: 3px; margin-top: 4px; }
+
+/* ── DASHBOARD SCREEN ── */
+#screen-dash { display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden; }
+.topbar { height: 40px; background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 12px; gap: 8px; flex-shrink: 0; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.topbar-title { font-size: 14px; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tbtn { padding: 5px 10px; background: #fff; border: 1px solid #dadce0; border-radius: 4px; font-size: 12px; color: #3c4043; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.tbtn:hover { background: #f1f3f4; }
+.tbtn.blue { background: #1a73e8; color: #fff; border-color: #1a73e8; }
+.tbtn.blue:hover { background: #1557b0; }
+
+/* Project tabs */
+.proj-bar { height: 33px; background: #fff; border-bottom: 2px solid #e0e0e0; display: flex; align-items: flex-end; padding: 0 8px; overflow-x: auto; flex-shrink: 0; }
+.proj-bar::-webkit-scrollbar { height: 0; }
+.ptab { height: 29px; padding: 0 14px; display: flex; align-items: center; font-size: 12px; color: #5f6368; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; margin-bottom: -2px; }
+.ptab:hover { color: #202124; }
+.ptab.on { color: #1a73e8; border-bottom-color: #1a73e8; font-weight: 600; }
+
+/* Account tabs (Sheets style) */
+.acc-bar { height: 33px; background: #f1f3f4; border-bottom: 1px solid #c7c7c7; display: flex; align-items: flex-end; padding: 0 6px; gap: 2px; overflow-x: auto; flex-shrink: 0; }
+.acc-bar::-webkit-scrollbar { height: 0; }
+.atab { height: 29px; padding: 0 13px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #444746; cursor: pointer; border: 1px solid transparent; border-bottom: none; border-radius: 3px 3px 0 0; position: relative; top: 1px; white-space: nowrap; }
+.atab:hover { background: #e8eaed; border-color: #c7c7c7; }
+.atab.on { background: #fff; border-color: #c7c7c7; border-bottom-color: #fff; font-weight: 600; color: #202124; }
+.atab.drag-over { border: 2px dashed #1a73e8 !important; background: #e8f0fe; }
+.ptab.drag-over { border: 2px dashed #1a73e8 !important; background: #e8f0fe; }
+.ptab[draggable="true"] { cursor: grab; }
+.ptab[draggable="true"]:active { cursor: grabbing; }
+.atab[draggable="true"] { cursor: grab; }
+.atab[draggable="true"]:active { cursor: grabbing; }
+.atab .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Date filter */
+.dbar { height: 33px; background: #fff; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 12px; gap: 6px; flex-shrink: 0; }
+.dbar label { font-size: 11.5px; color: #5f6368; }
+.dbar input[type=date] { padding: 2px 6px; border: 1px solid #dadce0; border-radius: 3px; font-size: 12px; height: 23px; outline: none; }
+.dbar input[type=date]:focus { border-color: #1a73e8; }
+.dbar .rowcount { margin-left: auto; font-size: 11px; color: #80868b; }
+
+/* Table */
+.tscroll { flex:1; overflow:scroll; min-height:0; min-width:0; }
+
+.tscroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.tscroll::-webkit-scrollbar-thumb { background: #9aa0a6; border-radius: 5px; }
+.tscroll::-webkit-scrollbar-thumb:window-inactive { background: #9aa0a6; }
+.tscroll::-webkit-scrollbar-track { background: #f1f3f4; }
+.tscroll::-webkit-scrollbar-corner { background: #f1f3f4; }
+
+table { border-collapse: collapse; font-size: 12.5px; }
+thead th { position: sticky; top: 0; z-index: 10; background: #f3f3f3; border-right: 1px solid #d0d0d0; border-bottom: 2px solid #aaa; padding: 4px 6px; text-align: center; font-size: 11px; font-weight: 600; color: #3c4043; white-space: nowrap; cursor: pointer; user-select: none; }
+thead th:hover { background: #e8eaed; }
+thead th.sorted { background: #e8f0fe; color: #1a73e8; }
+thead th:first-child { position: sticky; left: 0; z-index: 11; text-align: left; border-right: 2px solid #999; padding-left: 8px; }
+tbody tr:nth-child(odd) td { background: #fff; }
+tbody tr:nth-child(even) td { background: #f9f9f9; }
+tbody tr:hover td { background: #e8f0fe !important; }
+tbody td { border-right: 1px solid #d0d0d0; border-bottom: 1px solid #d0d0d0; padding: 3px 6px; text-align: right; white-space: nowrap; }
+tbody td:first-child { position: sticky; left: 0; z-index: 2; text-align: left; border-right: 2px solid #c4c7c5; padding-left: 8px; font-size: 12px; }
+tbody tr:nth-child(odd) td:first-child { background: #fff; }
+tbody tr:nth-child(even) td:first-child { background: #f9f9f9; }
+tbody tr:hover td:first-child { background: #e8f0fe !important; }
+tr.totrow td { background: #fff !important; font-weight: 700; border-top: 2px solid #555 !important; border-bottom: 2px solid #555 !important; }
+tr.totrow td:first-child { background: #fff !important; }
+td.memo-cell { text-align: left !important; padding: 2px 4px !important; width: 100%; min-width: 200px; }
+td.memo-cell input { width: 100%; border: none; background: transparent; font-size: 12px; color: #3c4043; outline: none; padding: 1px 4px; border-radius: 3px; }
+td.memo-cell input:hover { background: #f0f0f0; }
+td.memo-cell input:focus { background: #fff; border: 1px solid #dadce0; }
+.div0 { color: #c5221f; font-size: 11px; }
+.dow { color: #5f6368; font-size: 11px; margin-left: 3px; }
+.empty-msg { text-align: center; color: #80868b; padding: 48px 20px; font-size: 13px; }
+
+/* Status bar */
+.sbar { height: 21px; background: #f1f3f4; border-top: 1px solid #e0e0e0; display: flex; align-items: center; padding: 0 12px; gap: 16px; flex-shrink: 0; }
+.sbar span { font-size: 11px; color: #5f6368; }
+.sbar b { color: #202124; }
+
+/* Loading spinner */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid #e0e0e0; border-top-color: #1a73e8; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 5px; }
+</style>
+</head>
+<body>
+
+<!-- ════ SETUP SCREEN ════ -->
+<div id="screen-setup" class="screen active">
+  <div class="setup-box">
+    <h1>
+      <span class="logo-icon">M</span>
+      Metaデイリーレポート
+    </h1>
+    <p>
+      Google Sheets APIキーを入力してください。設定はブラウザに保存されます。<br>
+      <a href="https://console.cloud.google.com/apis/library/sheets.googleapis.com" target="_blank">→ Google Sheets API を有効化してキーを発行</a>
+    </p>
+    <div class="form-row">
+      <label>APIキー</label>
+      <input type="password" id="inp-key" placeholder="AIzaSy…">
+    </div>
+    <div class="form-row">
+      <label>スプレッドシートID</label>
+      <input type="text" id="inp-sid" value="1CD1qBCGTtT7_eQlqdJm7Ra1s1cRI8D6KUWtQand6b3s">
+      <div class="note">スプレッドシートを「リンクを知っている全員が閲覧可」にしてください</div>
+    </div>
+    <details style="margin-bottom:16px;border:1px solid #e0e0e0;border-radius:4px;overflow:hidden">
+      <summary style="padding:8px 12px;cursor:pointer;font-size:12px;font-weight:600;color:#5f6368;background:#f8f9fa;user-select:none">
+        ▶ 共有設定（オプション）— 設定・メモを複数人で共有する
+      </summary>
+      <div style="padding:12px 14px;background:#fff">
+        <div class="form-row" style="margin-bottom:0">
+          <label>Google Apps Script URL</label>
+          <input type="text" id="inp-gas" placeholder="https://script.google.com/macros/s/…/exec"
+            style="font-size:11.5px" oninput="GAS_URL=this.value.trim();localStorage.setItem('meta-ads-gas-url',GAS_URL)">
+          <div class="note">Apps ScriptをデプロイしたURLを入力すると、設定・メモが全員で共有されます</div>
+        </div>
+      </div>
+    </details>
+    <button class="btn btn-primary" id="btn-connect" onclick="doConnect()" style="width:100%;padding:10px;font-size:14px;">接続する →</button>
+    <div class="err" id="setup-err"></div>
+  </div>
+</div>
+
+<!-- ════ MANAGER SCREEN ════ -->
+<div id="screen-mgr" class="screen">
+  <div class="mgr-wrap">
+    <div class="mgr-header">
+      <h2>プロジェクト・アカウント設定</h2>
+      <button class="btn btn-secondary" onclick="showScreen('screen-setup')">← 戻る</button>
+    </div>
+    <div class="mgr-body" id="mgr-body"></div>
+    <div class="mgr-footer">
+      <button class="btn btn-secondary" onclick="showScreen('screen-setup')">← 戻る</button>
+      <button class="btn btn-primary" onclick="doSave()">保存してダッシュボードを開く →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ DASHBOARD SCREEN ════ -->
+<div id="screen-dash" class="screen">
+  <div class="topbar">
+    <span class="topbar-title" id="dash-title">Metaデイリーレポート</span>
+    <button class="tbtn" onclick="openMgr()">⚙ 設定</button>
+    <button class="tbtn" onclick="doCSV()">⬇ CSV</button>
+    <button class="tbtn blue" onclick="doRefresh()">↻ 更新</button>
+  </div>
+  <div class="proj-bar" id="proj-bar"></div>
+  <div class="acc-bar" id="acc-bar"></div>
+  <div class="dbar">
+    <label>期間：</label>
+    <input type="date" id="d-from" onchange="renderTable()">
+    <span style="color:#9e9e9e">〜</span>
+    <input type="date" id="d-to" onchange="renderTable()">
+    <button class="tbtn" onclick="clearDates()" style="font-size:11px;padding:3px 7px">クリア</button>
+    <span class="rowcount" id="rowcount"></span>
+  </div>
+  <div class="tscroll" id="tscroll">
+    <div class="empty-msg">読み込み中…</div>
+  </div>
+  <div class="sbar">
+    <span>行数：<b id="sb-rows">—</b></span>
+    <span>期間：<b id="sb-range">—</b></span>
+    <span style="margin-left:auto">更新：<b id="sb-updated">—</b></span>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ═══════════════════════════
+   CONSTANTS
+═══════════════════════════ */
+const SAVE_KEY  = 'meta-ads-cfg-v6';
+const MEMO_KEY  = 'meta-ads-memo-v2';
+// ★Google Apps Script デプロイURL（設定後に書き換え）
+var GAS_URL = localStorage.getItem('meta-ads-gas-url') || '';
+const DOW_JA    = ['日','月','火','水','木','金','土'];
+const TAB_COLORS = ['#1a73e8','#188038','#e37400','#a142f4','#d93025','#0097a7','#c62828','#7b5ea7','#1e8e3e'];
+
+// Columns (CPC・CTR removed)
+const COLS = [
+  { k:'date',  label:'日付',             fmt:'date', w:128, sortable:true  },
+  { k:'spend', label:'消化金額',    fmt:'int',  w:90,  sortable:true  },
+  { k:'clicks',label:'クリック',         fmt:'int',  w:66,  sortable:true  },
+  { k:'imp',   label:'IMP', fmt:'int',  w:88,  sortable:true  },
+  { k:'cpm',   label:'CPM',              fmt:'int',  w:62,  sortable:true,  calc:true },
+  { k:'cpc',   label:'CPC',              fmt:'int',  w:62,  sortable:true,  calc:true },
+  { k:'ctr',   label:'CTR',              fmt:'pct2', w:58,  sortable:true,  calc:true },
+  { k:'cv',    label:'CV',               fmt:'int',  w:50,  sortable:true  },
+  { k:'cpa',   label:'CPA',              fmt:'int',  w:68,  sortable:true,  calc:true },
+  { k:'cvr',   label:'CVR',              fmt:'pct0', w:55,  sortable:true,  calc:true },
+  { k:'mcv',   label:'MCV',              fmt:'int',  w:50,  sortable:true  },
+  { k:'mcpa',  label:'MCPA',             fmt:'int',  w:68,  sortable:true,  calc:true },
+  { k:'mcvr',  label:'MCVR',             fmt:'pct0', w:55,  sortable:true,  calc:true },
+  { k:'memo',  label:'メモ',              fmt:'memo', w:null, sortable:false, flex:true },
+];
+
+const MAP_FIELDS = [
+  { k:'date',  label:'日付',              req:true  },
+  { k:'spend', label:'消化金額',         req:true  },
+  { k:'clicks',label:'クリック',         req:true  },
+  { k:'imp',   label:'IMP', req:true  },
+  { k:'cv',    label:'CV',               req:false, hasDateCol:true },
+  { k:'mcv',   label:'MCV',              req:false, hasDateCol:true },
+];
+
+/* ═══════════════════════════
+   STATE
+═══════════════════════════ */
+let apiKey = '';
+let ssId   = '';
+let srcSheets = [];          // [{title}]
+let srcPrev   = {};          // sheetName → rows[][]
+let cfg = null;              // saved config
+let rawCache    = {};        // sheetName → rows[][]
+let mergedCache = {};        // accId → processed rows
+let memos = {};              // accId::dateStr → text
+let curProj = '';
+let curAcc  = '';
+let sortCol = '_d';
+let sortDir = 1;
+
+/* ═══════════════════════════
+   STORAGE
+═══════════════════════════ */
+// ── クラウド保存 (GAS) ──
+async function gasFetch(method, body) {
+  if (!GAS_URL) return null;
+  try {
+    if (method === 'GET') {
+      var res = await fetch(GAS_URL + '&' + new URLSearchParams(body));
+      var j = await res.json();
+      return j.ok ? j.data : null;
+    } else {
+      var res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify(body)
+      });
+      var j = await res.json();
+      return j.ok;
+    }
+  } catch(e) {
+    console.warn('[GAS]', e.message);
+    return null;
+  }
+}
+
+async function cloudSaveCfg(cfgObj) {
+  await gasFetch('POST', { action: 'saveConfig', data: cfgObj });
+}
+
+async function cloudLoadCfg() {
+  return await gasFetch('GET', { action: 'getConfig' });
+}
+
+async function cloudLoadMemos() {
+  return await gasFetch('GET', { action: 'getMemos' });
+}
+
+async function cloudSaveMemo(accId, date, text) {
+  if (text) {
+    await gasFetch('POST', { action: 'saveMemo', accId: accId, date: date, text: text });
+  } else {
+    await gasFetch('POST', { action: 'deleteMemo', accId: accId, date: date });
+  }
+}
+
+function saveCfg() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(cfg)); } catch(e) {}
+}
+function loadCfg() {
+  try { return JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch(e) { return null; }
+}
+function saveMemos() {
+  try { localStorage.setItem(MEMO_KEY, JSON.stringify(memos)); } catch(e) {}
+}
+function loadMemos() {
+  try { return JSON.parse(localStorage.getItem(MEMO_KEY) || '{}'); } catch(e) { return {}; }
+}
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+/* ═══════════════════════════
+   SCREEN SWITCHING
+═══════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ═══════════════════════════
+   API
+═══════════════════════════ */
+async function sheetsApi(path) {
+  const sep = path.includes('?') ? '&' : '?';
+  const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + ssId + path + sep + 'key=' + apiKey;
+  const res = await fetch(url);
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error ? json.error.message : 'HTTP ' + res.status);
+  return json;
+}
+
+async function fetchPreview(sheet) {
+  if (srcPrev[sheet]) return;
+  try {
+    // ヘッダー行を範囲指定なしで全列取得
+    const hd = await sheetsApi('/values/' + encodeURIComponent(sheet) + '!1:6');
+    srcPrev[sheet] = hd.values || [];
+  } catch(e) { srcPrev[sheet] = []; }
+}
+
+async function fetchSheet(sheet) {
+  if (rawCache[sheet]) return;
+  try {
+    const d = await sheetsApi('/values/' + encodeURIComponent(sheet));
+    rawCache[sheet] = d.values || [];
+  } catch(e) { rawCache[sheet] = []; }
+}
+
+/* ═══════════════════════════
+   CONNECT (STEP 1)
+═══════════════════════════ */
+async function doConnect() {
+  apiKey = document.getElementById('inp-key').value.trim();
+  ssId   = document.getElementById('inp-sid').value.trim();
+  const errEl = document.getElementById('setup-err');
+  errEl.textContent = '';
+  if (!apiKey || !ssId) { errEl.textContent = 'APIキーとIDを入力してください'; return; }
+
+  const btn = document.getElementById('btn-connect');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>接続中…';
+
+  try {
+    const meta = await sheetsApi('?fields=properties.title,sheets.properties(title)');
+    document.getElementById('dash-title').textContent = 'Metaデイリーレポート';
+    srcSheets = (meta.sheets || []).map(s => s.properties);
+    for (const s of srcSheets) await fetchPreview(s.title);
+
+    // クラウドから設定読み込みを試み、なければローカルを使用
+    var cloudCfg = await cloudLoadCfg();
+    var localCfg = loadCfg();
+    var saved = cloudCfg || localCfg;
+    if (saved && saved.sid === ssId) {
+      cfg = saved;
+      apiKey = cfg.key;
+      // クラウド設定をローカルにも同期
+      saveCfg();
+      // メモをクラウドから取得
+      var cloudMemos = await cloudLoadMemos();
+      if (cloudMemos) {
+        memos = cloudMemos;
+        saveMemos();
+      }
+      showScreen('screen-dash');
+      buildProjTabs();
+      if (cfg.projects.length > 0) selectProj(cfg.projects[0].id);
+    } else {
+      cfg = { key: apiKey, sid: ssId, projects: [] };
+      buildMgr();
+      showScreen('screen-mgr');
+    }
+  } catch(e) {
+    errEl.textContent = 'エラー: ' + e.message;
+  }
+  btn.disabled = false;
+  btn.textContent = '接続する →';
+}
+
+/* ═══════════════════════════
+   MANAGER (STEP 2)
+═══════════════════════════ */
+function defaultFieldMap() {
+  const sh = srcSheets.length > 0 ? srcSheets[0].title : '';
+  const m = {};
+  MAP_FIELDS.forEach(function(f, i) {
+    m[f.k] = { sheet: sh, hrow: 1, col: i < 4 ? i : -1 };
+    if (f.hasDateCol) m[f.k].dateCol = 0; // JOIN先の日付列（デフォルトA列）
+  });
+  return m;
+}
+
+function newProj() { return { id: uid(), name: '新規プロジェクト', accounts: [] }; }
+function newAcc()  {
+  return {
+    id: uid(), name: '新規アカウント',
+    color: TAB_COLORS[Math.floor(Math.random() * TAB_COLORS.length)],
+    fieldMap: defaultFieldMap()
+  };
+}
+
+function buildMgr() {
+  const body = document.getElementById('mgr-body');
+  body.innerHTML = '';
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'btn btn-secondary';
+  addBtn.style.marginBottom = '14px';
+  addBtn.textContent = '＋ プロジェクトを追加';
+  addBtn.onclick = function() { cfg.projects.push(newProj()); buildMgr(); };
+  body.appendChild(addBtn);
+
+  if (cfg.projects.length === 0) cfg.projects.push(newProj());
+
+  cfg.projects.forEach(function(proj, pi) {
+    const card = document.createElement('div');
+    card.className = 'proj-card';
+
+    const head = document.createElement('div');
+    head.className = 'proj-head';
+    head.innerHTML =
+      '<input type="text" value="' + esc(proj.name) + '" placeholder="プロジェクト名" ' +
+        'oninput="cfg.projects[' + pi + '].name=this.value">' +
+      '<button class="btn btn-secondary" style="font-size:11px;padding:3px 8px" ' +
+        'onclick="cfg.projects[' + pi + '].accounts.push(newAcc());buildMgr()">＋ アカウント追加</button>' +
+      '<button class="btn btn-danger" style="font-size:11px;padding:3px 8px" ' +
+        'onclick="if(confirm(\'削除しますか？\')){cfg.projects.splice(' + pi + ',1);buildMgr();}">削除</button>';
+    card.appendChild(head);
+
+    const pbody = document.createElement('div');
+    pbody.className = 'proj-body';
+
+    if (proj.accounts.length === 0) {
+      pbody.innerHTML = '<p style="color:#80868b;font-size:12px">「＋ アカウント追加」でアカウントを追加してください。</p>';
+    } else {
+      proj.accounts.forEach(function(acc, ai) {
+        pbody.appendChild(buildAccCard(pi, acc, ai));
+      });
+    }
+    card.appendChild(pbody);
+    body.appendChild(card);
+  });
+}
+
+function buildAccCard(pi, acc, ai) {
+  const card = document.createElement('div');
+  card.className = 'acc-card';
+  card.id = 'acc-' + acc.id;
+
+  // Header
+  const head = document.createElement('div');
+  head.className = 'acc-head';
+  const colorInp = document.createElement('input');
+  colorInp.type = 'color';
+  colorInp.value = acc.color;
+  colorInp.style.cssText = 'width:28px;height:28px;border:none;border-radius:4px;cursor:pointer;padding:0;flex-shrink:0';
+  colorInp.oninput = function() { cfg.projects[pi].accounts[ai].color = this.value; };
+  head.appendChild(colorInp);
+
+  const nameInp = document.createElement('input');
+  nameInp.type = 'text';
+  nameInp.value = acc.name;
+  nameInp.placeholder = 'アカウント名';
+  nameInp.oninput = function() { cfg.projects[pi].accounts[ai].name = this.value; };
+  head.appendChild(nameInp);
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn btn-danger';
+  delBtn.style.cssText = 'font-size:11px;padding:3px 8px';
+  delBtn.textContent = '削除';
+  delBtn.onclick = function() {
+    if (confirm('削除しますか？')) { cfg.projects[pi].accounts.splice(ai, 1); buildMgr(); }
+  };
+  head.appendChild(delBtn);
+  card.appendChild(head);
+
+  // Field mapping table
+  const tbl = document.createElement('table');
+  tbl.className = 'field-table';
+  tbl.innerHTML =
+    '<thead><tr>' +
+    '<th>フィールド</th><th style="min-width:160px">シート</th>' +
+    '<th style="width:70px">ヘッダー行</th><th style="min-width:180px">列</th>' +
+    '<th style="min-width:150px">日付列(JOIN用)</th>' +
+    '</tr></thead>';
+  const tbody = document.createElement('tbody');
+
+  MAP_FIELDS.forEach(function(f) {
+    const fm = acc.fieldMap[f.k] || { sheet: srcSheets[0] ? srcSheets[0].title : '', hrow: 1, col: -1 };
+    const tr = document.createElement('tr');
+
+    // Field name cell
+    const tdName = document.createElement('td');
+    tdName.innerHTML = esc(f.label) + (f.req ? '<span style="color:#c5221f">*</span>' : '');
+    tr.appendChild(tdName);
+
+    // Sheet select
+    const tdSheet = document.createElement('td');
+    const selSheet = document.createElement('select');
+    srcSheets.forEach(function(s) {
+      const opt = document.createElement('option');
+      opt.value = s.title;
+      opt.textContent = s.title;
+      if (s.title === fm.sheet) opt.selected = true;
+      selSheet.appendChild(opt);
+    });
+    selSheet.onchange = function() {
+      cfg.projects[pi].accounts[ai].fieldMap[f.k].sheet = this.value;
+      cfg.projects[pi].accounts[ai].fieldMap[f.k].hrow = 1;
+      rebuildAcc(pi, ai);
+    };
+    tdSheet.appendChild(selSheet);
+    tr.appendChild(tdSheet);
+
+    // Hrow input
+    const tdHrow = document.createElement('td');
+    const hrowInp = document.createElement('input');
+    hrowInp.type = 'number';
+    hrowInp.min = 1; hrowInp.max = 20;
+    hrowInp.value = fm.hrow;
+    hrowInp.onchange = function() {
+      cfg.projects[pi].accounts[ai].fieldMap[f.k].hrow = parseInt(this.value, 10) || 1;
+      rebuildAcc(pi, ai);
+    };
+    tdHrow.appendChild(hrowInp);
+    tr.appendChild(tdHrow);
+
+    // Column select
+    const tdCol = document.createElement('td');
+    const selCol = document.createElement('select');
+    if (!f.req) {
+      const noneOpt = document.createElement('option');
+      noneOpt.value = '-1';
+      noneOpt.textContent = '— なし —';
+      selCol.appendChild(noneOpt);
+    }
+    const prev = srcPrev[fm.sheet] || [];
+    const hdrRow = prev[fm.hrow - 1] || [];
+    // rawCacheの実データからも最大列数を取得して確実に最終列まで表示
+    const rawRows = rawCache[fm.sheet] || [];
+    const maxFromRaw  = rawRows.reduce(function(m, r) { return Math.max(m, (r||[]).length); }, 0);
+    const maxFromPrev = prev.reduce(function(m, r) { return Math.max(m, r.length); }, 0);
+    const maxCols = Math.max(maxFromPrev, maxFromRaw, 30);
+    for (let c = 0; c < maxCols; c++) {
+      const opt = document.createElement('option');
+      opt.value = String(c);
+      opt.textContent = colAlpha(c) + (hdrRow[c] ? ' (' + hdrRow[c] + ')' : '');
+      if (c === fm.col) opt.selected = true;
+      selCol.appendChild(opt);
+    }
+    selCol.onchange = function() {
+      cfg.projects[pi].accounts[ai].fieldMap[f.k].col = parseInt(this.value, 10);
+    };
+    tdCol.appendChild(selCol);
+    tr.appendChild(tdCol);
+
+    // JOIN用日付列（別シートのフィールドのみ）
+    const tdDc = document.createElement('td');
+    if (f.hasDateCol) {
+      const selDc = document.createElement('select');
+      selDc.style.cssText = 'width:100%;padding:3px 5px;border:1px solid #dadce0;border-radius:3px;font-size:11.5px;outline:none;background:#fff';
+      const dcPrev = srcPrev[fm.sheet] || [];
+      const dcHdr  = dcPrev[(fm.hrow||1)-1] || [];
+      const dcMax  = Math.max(dcPrev.reduce(function(m,r){return Math.max(m,r.length);},0), 30);
+      for (var dc = 0; dc < dcMax; dc++) {
+        const dcOpt = document.createElement('option');
+        dcOpt.value = String(dc);
+        dcOpt.textContent = colAlpha(dc) + (dcHdr[dc] ? ' (' + dcHdr[dc] + ')' : '');
+        if (dc === (fm.dateCol !== undefined ? fm.dateCol : 0)) dcOpt.selected = true;
+        selDc.appendChild(dcOpt);
+      }
+      selDc.onchange = function() {
+        cfg.projects[pi].accounts[ai].fieldMap[f.k].dateCol = parseInt(this.value, 10);
+      };
+      tdDc.appendChild(selDc);
+    } else {
+      tdDc.innerHTML = '<span style="color:#bbb;font-size:11px">—</span>';
+    }
+    tr.appendChild(tdDc);
+
+    tbody.appendChild(tr);
+  });
+  tbl.appendChild(tbody);
+  card.appendChild(tbl);
+
+  const note = document.createElement('div');
+  note.className = 'calc-note';
+  note.textContent = 'CPM・CPA・CVR・MCPA・MCVR は自動計算（列指定不要）';
+  card.appendChild(note);
+
+  // Preview
+  const sheetNames = [];
+  MAP_FIELDS.forEach(function(f) {
+    const sh = (acc.fieldMap[f.k] || {}).sheet;
+    if (sh && sheetNames.indexOf(sh) < 0) sheetNames.push(sh);
+  });
+  sheetNames.forEach(function(sn) {
+    const rows = srcPrev[sn] || [];
+    if (!rows.length) return;
+    const div = document.createElement('div');
+    div.style.marginTop = '10px';
+    const maxC = rows.reduce(function(m, r) { return Math.max(m, r.length); }, 0);
+    let html = '<div style="font-size:11px;color:#80868b;margin-bottom:3px">📋 ' + esc(sn) + ' — 先頭行プレビュー</div>';
+    html += '<div style="overflow:auto;max-height:100px;border:1px solid #e0e0e0;border-radius:3px">';
+    html += '<table style="border-collapse:collapse;font-size:11px;font-family:monospace;width:100%">';
+    html += '<thead><tr><th style="background:#f3f3f3;padding:2px 8px;border:1px solid #e0e0e0;position:sticky;top:0">#</th>';
+    for (let c = 0; c < maxC; c++) html += '<th style="background:#f3f3f3;padding:2px 8px;border:1px solid #e0e0e0;position:sticky;top:0">' + colAlpha(c) + '</th>';
+    html += '</tr></thead><tbody>';
+    rows.slice(0, 5).forEach(function(row, ri) {
+      html += '<tr><td style="background:#f3f3f3;padding:2px 8px;border:1px solid #eee;font-weight:600;color:#5f6368;text-align:center">' + (ri+1) + '</td>';
+      for (let c = 0; c < maxC; c++) html += '<td style="padding:2px 8px;border:1px solid #eee;white-space:nowrap">' + esc(row[c] || '') + '</td>';
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    div.innerHTML = html;
+    card.appendChild(div);
+  });
+
+  return card;
+}
+
+function rebuildAcc(pi, ai) {
+  const acc = cfg.projects[pi].accounts[ai];
+  const old = document.getElementById('acc-' + acc.id);
+  if (old) old.parentNode.replaceChild(buildAccCard(pi, acc, ai), old);
+}
+
+function doSave() {
+  cfg.key = apiKey;
+  cfg.sid = ssId;
+  saveCfg();
+  cloudSaveCfg(cfg); // クラウドにも非同期保存
+  invalidateTotalCaches();
+  showScreen('screen-dash');
+  buildProjTabs();
+  if (cfg.projects.length > 0) selectProj(cfg.projects[0].id);
+}
+
+function openMgr() {
+  buildMgr();
+  showScreen('screen-mgr');
+}
+
+/* ═══════════════════════════
+   DASHBOARD
+═══════════════════════════ */
+function buildProjTabs() {
+  const bar = document.getElementById('proj-bar');
+  bar.innerHTML = '';
+  // ── 総合タブを最左端に固定 ──
+  if (cfg.projects.length > 1) {
+    const gt = document.createElement('div');
+    gt.className = 'ptab';
+    gt.dataset.id = '__grand__';
+    gt.textContent = '📊 総合';
+    gt.onclick = function() { selectProj('__grand__'); };
+    bar.appendChild(gt);
+  }
+  // ── 案件タブ（ドラッグ&ドロップで並び替え可）──
+  cfg.projects.forEach(function(p) {
+    const t = document.createElement('div');
+    t.className = 'ptab';
+    t.dataset.id = p.id;
+    t.textContent = p.name;
+    t.draggable = true;
+    t.style.cursor = 'grab';
+    t.onclick = function() { selectProj(p.id); };
+    t.addEventListener('dragstart', function(e) {
+      e.dataTransfer.setData('text/plain', p.id);
+      t.classList.add('dragging');
+      t.style.opacity = '0.5';
+    });
+    t.addEventListener('dragend', function() {
+      t.classList.remove('dragging');
+      t.style.opacity = '';
+      document.querySelectorAll('.ptab').forEach(function(el) {
+        el.classList.remove('drag-over');
+      });
+    });
+    t.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      const dragging = document.querySelector('.ptab.dragging');
+      if (!dragging || dragging === t) return;
+      t.classList.add('drag-over');
+    });
+    t.addEventListener('dragleave', function() {
+      t.classList.remove('drag-over');
+    });
+    t.addEventListener('drop', function(e) {
+      e.preventDefault();
+      t.classList.remove('drag-over');
+      const fromId = e.dataTransfer.getData('text/plain');
+      if (!fromId || fromId === p.id) return;
+      const fromIdx = cfg.projects.findIndex(function(x) { return x.id === fromId; });
+      const toIdx   = cfg.projects.findIndex(function(x) { return x.id === p.id; });
+      if (fromIdx < 0 || toIdx < 0) return;
+      const moved = cfg.projects.splice(fromIdx, 1)[0];
+      cfg.projects.splice(toIdx, 0, moved);
+      saveCfg();
+      cloudSaveCfg(cfg);
+      buildProjTabs();
+      // 現在選択中タブを維持
+      document.querySelectorAll('.ptab').forEach(function(el) {
+        el.classList.toggle('on', el.dataset.id === curProj);
+      });
+    });
+    bar.appendChild(t);
+  });
+}
+
+function selectProj(id) {
+  curProj = id;
+  sortCol = '_d'; sortDir = 1;
+  document.querySelectorAll('.ptab').forEach(function(t) {
+    t.classList.toggle('on', t.dataset.id === id);
+  });
+  // 総合タブ
+  if (id === '__grand__') {
+    buildAccTabsGrand();
+    selectAcc('__grand__');
+    return;
+  }
+  const proj = cfg.projects.find(function(p) { return p.id === id; });
+  if (!proj) return;
+  buildAccTabs(proj);
+  if (proj.accounts.length > 1) selectAcc('__total__' + proj.id);
+  else if (proj.accounts.length > 0) selectAcc(proj.accounts[0].id);
+  else showEmpty('アカウントが登録されていません');
+}
+
+function buildAccTabs(proj) {
+  const bar = document.getElementById('acc-bar');
+  bar.innerHTML = '';
+  // ── 合計タブを最左端に固定（●なし・ドラッグ不可）──
+  if (proj.accounts.length > 1) {
+    var pid = proj.id;
+    var tt = document.createElement('div');
+    tt.className = 'atab';
+    tt.dataset.id = '__total__' + pid;
+    tt.appendChild(document.createTextNode('合計'));
+    tt.onclick = function() { selectAcc('__total__' + pid); };
+    bar.appendChild(tt);
+  }
+  // ── 各アカウントタブ（ドラッグ&ドロップで並び替え）──
+  proj.accounts.forEach(function(acc) {
+    const t = document.createElement('div');
+    t.className = 'atab';
+    t.dataset.id = acc.id;
+    t.draggable = true;
+    const dot = document.createElement('span');
+    dot.className = 'dot';
+    dot.style.background = acc.color;
+    t.appendChild(dot);
+    t.appendChild(document.createTextNode(acc.name));
+    t.onclick = function() { selectAcc(acc.id); };
+    t.addEventListener('dragstart', function(e) {
+      e.dataTransfer.setData('accId', acc.id);
+      setTimeout(function() { t.style.opacity = '0.4'; }, 0);
+    });
+    t.addEventListener('dragend', function() {
+      t.style.opacity = '';
+      bar.querySelectorAll('.atab').forEach(function(el) {
+        el.classList.remove('drag-over');
+      });
+    });
+    t.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      if (t.dataset.id.indexOf('__total__') === 0) return;
+      if (t.dataset.id === e.dataTransfer.getData('accId')) return;
+      t.classList.add('drag-over');
+    });
+    t.addEventListener('dragleave', function() {
+      t.classList.remove('drag-over');
+    });
+    t.addEventListener('drop', function(e) {
+      e.preventDefault();
+      t.classList.remove('drag-over');
+      const fromId = e.dataTransfer.getData('accId');
+      if (!fromId || fromId === acc.id) return;
+      var projIdx = cfg.projects.findIndex(function(p) { return p.id === curProj; });
+      if (projIdx < 0) return;
+      var accs = cfg.projects[projIdx].accounts;
+      var fromIdx = accs.findIndex(function(a) { return a.id === fromId; });
+      var toIdx   = accs.findIndex(function(a) { return a.id === acc.id; });
+      if (fromIdx < 0 || toIdx < 0) return;
+      var moved = accs.splice(fromIdx, 1)[0];
+      accs.splice(toIdx, 0, moved);
+      saveCfg();
+      cloudSaveCfg(cfg);
+      buildAccTabs(cfg.projects[projIdx]);
+      document.querySelectorAll('.atab').forEach(function(el) {
+        el.classList.toggle('on', el.dataset.id === curAcc);
+      });
+    });
+    bar.appendChild(t);
+  });
+}
+
+function buildAccTabsGrand() {
+  var bar = document.getElementById('acc-bar');
+  bar.innerHTML = '';
+  var t = document.createElement('div');
+  t.className = 'atab on';
+  t.dataset.id = '__grand__';
+  t.appendChild(document.createTextNode('全プロジェクト合計'));
+  bar.appendChild(t);
+}
+
+function selectAcc(id) {
+  curAcc = id;
+  sortCol = '_d'; sortDir = 1;
+  document.querySelectorAll('.atab').forEach(function(t) {
+    t.classList.toggle('on', t.dataset.id === id);
+  });
+  loadAcc(id);
+}
+
+// 合計・総合タブのキャッシュを無効化（アカウント設定変更後などに呼ぶ）
+function invalidateTotalCaches() {
+  Object.keys(mergedCache).forEach(function(k) {
+    if (k === '__grand__' || k.indexOf('__total__') === 0) delete mergedCache[k];
+  });
+}
+
+async function loadAcc(id) {
+  showLoading();
+  try {
+    // ── 総合タブ ──
+    if (id === '__grand__') {
+      // 全プロジェクトの全アカウントを読み込んでから合算
+      var allAccIds = [];
+      cfg.projects.forEach(function(p) { p.accounts.forEach(function(a) { allAccIds.push(a.id); }); });
+      for (var i = 0; i < allAccIds.length; i++) {
+        var aid = allAccIds[i];
+        if (!mergedCache[aid]) {
+          var acc2 = null;
+          cfg.projects.forEach(function(p) { p.accounts.forEach(function(a) { if (a.id === aid) acc2 = a; }); });
+          if (acc2) {
+            var sheetsNeeded2 = [];
+            MAP_FIELDS.forEach(function(f) { var sh = (acc2.fieldMap[f.k]||{}).sheet; if (sh && sheetsNeeded2.indexOf(sh)<0) sheetsNeeded2.push(sh); });
+            for (var si = 0; si < sheetsNeeded2.length; si++) await fetchSheet(sheetsNeeded2[si]);
+            mergedCache[aid] = buildRows(acc2);
+          }
+        }
+      }
+      mergedCache['__grand__'] = mergeByDate(allAccIds);
+      initDateRange(mergedCache['__grand__']);
+      renderTable();
+      document.getElementById('sb-updated').textContent = new Date().toLocaleTimeString('ja-JP');
+      return;
+    }
+
+    // ── プロジェクト合計タブ ──
+    if (id.indexOf('__total__') === 0) {
+      var pid = id.replace('__total__', '');
+      var proj = cfg.projects.find(function(p) { return p.id === pid; });
+      if (!proj) { showEmpty('プロジェクトが見つかりません'); return; }
+      var accIds = proj.accounts.map(function(a) { return a.id; });
+      for (var i = 0; i < accIds.length; i++) {
+        var aid = accIds[i];
+        if (!mergedCache[aid]) {
+          var acc3 = proj.accounts.find(function(a) { return a.id === aid; });
+          if (acc3) {
+            var sheetsNeeded3 = [];
+            MAP_FIELDS.forEach(function(f) { var sh = (acc3.fieldMap[f.k]||{}).sheet; if (sh && sheetsNeeded3.indexOf(sh)<0) sheetsNeeded3.push(sh); });
+            for (var si = 0; si < sheetsNeeded3.length; si++) await fetchSheet(sheetsNeeded3[si]);
+            mergedCache[aid] = buildRows(acc3);
+          }
+        }
+      }
+      mergedCache[id] = mergeByDate(accIds);
+      initDateRange(mergedCache[id]);
+      renderTable();
+      document.getElementById('sb-updated').textContent = new Date().toLocaleTimeString('ja-JP');
+      return;
+    }
+
+    // ── 通常アカウント ──
+    if (!mergedCache[id]) {
+      let acc = null;
+      cfg.projects.forEach(function(p) {
+        p.accounts.forEach(function(a) { if (a.id === id) acc = a; });
+      });
+      if (!acc) { showEmpty('アカウントが見つかりません'); return; }
+
+      const sheetsNeeded = [];
+      MAP_FIELDS.forEach(function(f) {
+        const sh = (acc.fieldMap[f.k] || {}).sheet;
+        if (sh && sheetsNeeded.indexOf(sh) < 0) sheetsNeeded.push(sh);
+      });
+      for (const sn of sheetsNeeded) await fetchSheet(sn);
+      mergedCache[id] = buildRows(acc);
+    }
+    initDateRange(mergedCache[id]);
+    renderTable();
+    document.getElementById('sb-updated').textContent = new Date().toLocaleTimeString('ja-JP');
+  } catch(e) {
+    showEmpty('エラー: ' + e.message);
+  }
+}
+
+// 複数アカウントの行を日付キーで合算する
+function mergeByDate(accIds) {
+  var dateMap = {}; // normDate → merged row
+  accIds.forEach(function(aid) {
+    var rows = mergedCache[aid] || [];
+    rows.forEach(function(r) {
+      if (r._tot) return;
+      var dk = normDate(r.date) || r.date;
+      if (!dateMap[dk]) {
+        dateMap[dk] = {
+          _tot: false, _d: r._d, date: r.date,
+          spend: 0, clicks: 0, imp: 0, cv: 0, mcv: 0
+        };
+      }
+      var m = dateMap[dk];
+      m.spend  += isFinite(r.spend)  ? +r.spend  : 0;
+      m.clicks += isFinite(r.clicks) ? +r.clicks : 0;
+      m.imp    += isFinite(r.imp)    ? +r.imp    : 0;
+      m.cv     += isFinite(r.cv)     ? +r.cv     : 0;
+      m.mcv    += isFinite(r.mcv)    ? +r.mcv    : 0;
+    });
+  });
+  // 派生指標を再計算
+  return Object.keys(dateMap).sort().map(function(dk) {
+    var m = dateMap[dk];
+    m.cpm  = m.imp    > 0 ? m.spend / m.imp * 1000 : NaN;
+    m.cpc  = m.clicks > 0 ? m.spend / m.clicks     : NaN;
+    m.ctr  = m.imp    > 0 ? m.clicks / m.imp       : NaN;
+    m.cpa  = m.cv     > 0 ? m.spend / m.cv         : NaN;
+    m.cvr  = m.mcv    > 0 ? m.cv / m.mcv            : NaN;
+    m.mcpa = m.mcv    > 0 ? m.spend / m.mcv        : NaN;
+    m.mcvr = m.clicks > 0 ? m.mcv / m.clicks       : NaN;
+    return m;
+  });
+}
+
+/* ═══════════════════════════
+   DATA PROCESSING
+═══════════════════════════ */
+// 日付文字列を YYYY-MM-DD に正規化（形式が違ってもJOINできるように）
+function normDate(s) {
+  if (!s) return '';
+  s = s.trim();
+  // 2026年1月1日火曜日 → 2026-01-01
+  var m = s.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+  if (m) return m[1] + '-' + ('0'+m[2]).slice(-2) + '-' + ('0'+m[3]).slice(-2);
+  // 2026/1/1 or 2026-1-1
+  m = s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if (m) return m[1] + '-' + ('0'+m[2]).slice(-2) + '-' + ('0'+m[3]).slice(-2);
+  return s;
+}
+
+function buildRows(acc) {
+  var fm = acc.fieldMap;
+  var dateFm = fm['date'] || {};
+  var baseSheet = dateFm.sheet || '';
+  var baseDateCol = dateFm.col >= 0 ? dateFm.col : 0;
+  var baseHrow = (dateFm.hrow || 1) - 1;
+  var raw = rawCache[baseSheet] || [];
+
+  // 別シートフィールドのJOINマップ: normDate(日付) → 値
+  var joinMaps = {};
+  ['spend','clicks','imp','cv','mcv'].forEach(function(fk) {
+    var fmi = fm[fk] || {};
+    if (!fmi.sheet || fmi.col < 0) return;
+    if (fmi.sheet === baseSheet) return; // 同シートは直読み
+    var jmap = {};
+    var jraw = rawCache[fmi.sheet] || [];
+    var jHrow = (fmi.hrow || 1) - 1;
+    // JOIN先の日付列: fieldMapのdateCol設定を優先、なければ列0
+    var jDateCol = (fmi.dateCol !== undefined && fmi.dateCol >= 0) ? fmi.dateCol : 0;
+    for (var jri = jHrow + 1; jri < jraw.length; jri++) {
+      var jrow = jraw[jri] || [];
+      var dv = (jrow[jDateCol] || '').trim();
+      var nd = normDate(dv);
+      if (nd) jmap[nd] = jrow[fmi.col];
+    }
+    joinMaps[fk] = jmap;
+  });
+
+  // DEBUG: joinMapsの内容を確認
+  Object.keys(joinMaps).forEach(function(fk) {
+    var keys = Object.keys(joinMaps[fk]);
+    var fmi2 = fm[fk] || {};
+    console.log('[JOIN] ' + fk + ': ' + keys.length + '件, dateCol=' + fmi2.dateCol + ', 先頭キー=' + (keys[0]||'なし') + ', 値=' + joinMaps[fk][keys[0]]);
+  });
+  console.log('[rawCache] sheets:', Object.keys(rawCache).join(' | '));
+
+  var rows = [];
+  for (var ri = baseHrow + 1; ri < raw.length; ri++) {
+    var row = raw[ri] || [];
+    var dateStr = (row[baseDateCol] || '').trim();
+    if (!dateStr) continue;
+    var dateNorm = normDate(dateStr); // JOIN用正規化キー
+    var isTot = /^total$/i.test(dateStr) || /^合計$/.test(dateStr);
+
+    function readField(fk, currentRow, nd) {
+      var fmi = fm[fk] || {};
+      if (!fmi.sheet || fmi.col < 0) return NaN;
+      if (fmi.sheet === baseSheet) return toNum(currentRow[fmi.col]);
+      var jmap = joinMaps[fk];
+      return jmap ? toNum(jmap[nd]) : NaN;
+    }
+
+    var spend  = readField('spend',  row, dateNorm);
+    var clicks = readField('clicks', row, dateNorm);
+    var imp    = readField('imp',    row, dateNorm);
+    var cv     = readField('cv',     row, dateNorm);
+    var mcv    = readField('mcv',    row, dateNorm);
+    if (ri === baseHrow + 1) {
+      console.log('[ROW1] dateStr=' + dateStr + ' dateNorm=' + dateNorm);
+      console.log('[ROW1] spend=' + spend + ' cv=' + cv + ' mcv=' + mcv);
+      if (joinMaps['cv']) {
+        var cvKeys = Object.keys(joinMaps['cv']);
+        console.log('[JOIN cv] キー例:', cvKeys.slice(0,3).join(' | '));
+        console.log('[JOIN cv] dateNormと一致?', joinMaps['cv'][dateNorm] !== undefined, '値=', joinMaps['cv'][dateNorm]);
+      }
+    }
+
+    rows.push({
+      _tot:   isTot,
+      _d:     parseDate(dateStr),
+      date:   dateStr,
+      spend:  spend,
+      clicks: clicks,
+      imp:    imp,
+      cv:     cv,
+      mcv:    mcv,
+      cpm:  (imp    > 0) ? spend / imp * 1000 : NaN,
+      cpa:  (cv     > 0) ? spend / cv         : NaN,
+      cvr:  (mcv    > 0) ? cv / mcv            : NaN,
+      mcpa: (mcv    > 0) ? spend / mcv        : NaN,
+      mcvr: (clicks > 0) ? mcv / clicks       : NaN,
+    });
+  }
+  return rows;
+}
+
+/* ═══════════════════════════
+   RENDER
+═══════════════════════════ */
+function renderTable() {
+  const rows = mergedCache[curAcc];
+  if (!rows) return;
+  // 合計・総合タブはメモ列を非表示
+  var isTotalTab = (curAcc === '__grand__' || curAcc.indexOf('__total__') === 0);
+
+  const fromStr = document.getElementById('d-from').value;
+  const toStr   = document.getElementById('d-to').value;
+  const from = fromStr ? parseLocalDate(fromStr, false) : null;
+  const to   = toStr   ? parseLocalDate(toStr, true)    : null;
+
+  let data = rows.filter(function(r) {
+    if (r._tot) return false;
+    if (from && r._d && r._d < from) return false;
+    if (to   && r._d && r._d > to)   return false;
+    return true;
+  });
+
+  if (sortCol) {
+    data = data.slice().sort(function(a, b) {
+      const av = sortCol === '_d' ? (a._d ? a._d.getTime() : 0) : a[sortCol];
+      const bv = sortCol === '_d' ? (b._d ? b._d.getTime() : 0) : b[sortCol];
+      const ai = !isFinite(av), bi = !isFinite(bv);
+      if (ai && bi) return 0;
+      if (ai) return 1;
+      if (bi) return -1;
+      return sortDir * (av < bv ? -1 : av > bv ? 1 : 0);
+    });
+  }
+
+  const tscroll = document.getElementById('tscroll');
+  const tbl = document.createElement('table');
+  tbl.style.tableLayout = 'auto';
+  if (isTotalTab) {
+    tbl.style.width = 'auto';
+    tbl.style.marginLeft = '0';
+  } else {
+    var totalW = COLS.reduce(function(s, col) { return s + (col.w || 80); }, 0) + 220;
+    tbl.style.minWidth = totalW + 'px';
+    tbl.style.width = '100%';
+  }
+
+  // THEAD
+  const thead = document.createElement('thead');
+  const hr = document.createElement('tr');
+  COLS.forEach(function(col) {
+    if (isTotalTab && col.k === 'memo') return; // 合計タブはメモ列スキップ
+    const th = document.createElement('th');
+    if (isTotalTab) {
+      th.style.padding = '3px 5px';
+      th.style.fontSize = '10.5px';
+      th.style.minWidth = (col.k === 'date' ? 90 : Math.round((col.w||50)*0.85)) + 'px';
+    } else {
+      if (col.flex) { th.style.width = '100%'; }
+      else if (col.w) { th.style.minWidth = col.w + 'px'; th.style.maxWidth = col.w + 'px'; }
+    }
+    if (col.k === 'date') th.style.textAlign = 'left';
+    if (col.k === 'memo') th.style.textAlign = 'left';
+    th.textContent = col.label;
+    if (col.sortable) {
+      if (sortCol === col.k || (col.k === 'date' && sortCol === '_d')) {
+        th.classList.add('sorted');
+        th.textContent += sortDir > 0 ? ' ▲' : ' ▼';
+      }
+      th.onclick = function() {
+        const sk = col.k === 'date' ? '_d' : col.k;
+        if (sortCol === sk) sortDir *= -1;
+        else { sortCol = sk; sortDir = 1; }
+        renderTable();
+      };
+    }
+    hr.appendChild(th);
+  });
+  thead.appendChild(hr);
+  tbl.appendChild(thead);
+
+  // TBODY
+  const tbody = document.createElement('tbody');
+  if (data.length === 0) {
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.colSpan = isTotalTab ? COLS.length - 1 : COLS.length;
+    td.className = 'empty-msg';
+    td.textContent = 'データがありません';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  } else {
+    data.forEach(function(r, ri) {
+      const tr = document.createElement('tr');
+      COLS.forEach(function(col) {
+        if (isTotalTab && col.k === 'memo') return; // 合計タブはメモ列スキップ
+        const td = document.createElement('td');
+        if (col.k === 'date') {
+          td.textContent = r.date;
+          if (r._d) {
+            const sp = document.createElement('span');
+            sp.className = 'dow';
+            sp.textContent = '(' + DOW_JA[r._d.getDay()] + ')';
+            td.appendChild(sp);
+          }
+        } else if (col.k === 'memo') {
+          td.className = 'memo-cell';
+          td.style.width = '100%';
+          const inp = document.createElement('input');
+          inp.type = 'text';
+          inp.placeholder = 'メモ…';
+          const mk = curAcc + '::' + r.date;
+          inp.value = memos[mk] || '';
+          inp.addEventListener('change', (function(dateStr) {
+            return function() {
+              const mk2 = curAcc + '::' + dateStr;
+              if (this.value) memos[mk2] = this.value;
+              else delete memos[mk2];
+              saveMemos();
+              cloudSaveMemo(curAcc, dateStr, this.value); // クラウドにも保存
+            };
+          })(r.date));
+          td.appendChild(inp);
+        } else {
+          td.innerHTML = formatVal(col.fmt, r[col.k]);
+        }
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+
+    // TOTAL row
+    const tot = calcTotal(data);
+    const tr = document.createElement('tr');
+    tr.className = 'totrow';
+    COLS.forEach(function(col) {
+      if (isTotalTab && col.k === 'memo') return; // 合計タブはメモ列スキップ
+      const td = document.createElement('td');
+      if (isTotalTab) { td.style.padding = '2px 5px'; td.style.fontSize = '11.5px'; }
+      if (col.k === 'date') {
+        td.textContent = 'TOTAL';
+        td.style.textAlign = 'left';
+      } else if (col.k === 'memo') {
+        td.textContent = '';
+      } else {
+        td.innerHTML = formatVal(col.fmt, tot[col.k]);
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  }
+  tbl.appendChild(tbody);
+  tscroll.innerHTML = '';
+  tscroll.appendChild(tbl);
+  // 横スクロール強制: 全子要素にmin-widthを付与
+  var minW = COLS.filter(function(col){ return !(isTotalTab && col.k==='memo'); })
+                 .reduce(function(s,col){ return s+(col.w||80); }, 0) + 160;
+  var mwPx = minW + 'px';
+  tbl.style.width = mwPx;
+  tbl.style.minWidth = mwPx;
+  // tscrollは自動伸縮するのでtableのmin-widthだけ設定
+
+  // Status
+  document.getElementById('rowcount').textContent = data.length + ' 行';
+  document.getElementById('sb-rows').textContent  = data.length;
+  const dates = data.map(function(r) { return r._d; }).filter(Boolean).sort(function(a,b){return a-b;});
+  if (dates.length) {
+    const fmt = function(d) { return d.getFullYear() + '/' + (d.getMonth()+1) + '/' + d.getDate(); };
+    document.getElementById('sb-range').textContent = fmt(dates[0]) + ' 〜 ' + fmt(dates[dates.length-1]);
+  }
+}
+
+function calcTotal(rows) {
+  const sum = function(k) { return rows.reduce(function(t,r) { return t + (isFinite(r[k]) ? +r[k] : 0); }, 0); };
+  const spend = sum('spend'), clicks = sum('clicks'), imp = sum('imp'), cv = sum('cv'), mcv = sum('mcv');
+  return {
+    spend, clicks, imp, cv, mcv,
+    cpm:  imp    > 0 ? spend / imp * 1000 : NaN,
+    cpc:  clicks > 0 ? spend / clicks     : NaN,
+    ctr:  imp    > 0 ? clicks / imp       : NaN,
+    cpa:  cv     > 0 ? spend / cv         : NaN,
+    cvr:  mcv    > 0 ? cv / mcv            : NaN,
+    mcpa: mcv    > 0 ? spend / mcv        : NaN,
+    mcvr: clicks > 0 ? mcv / clicks       : NaN,
+  };
+}
+
+/* ═══════════════════════════
+   FORMATTERS
+═══════════════════════════ */
+function formatVal(fmt, v) {
+  if (fmt === 'date' || fmt === 'memo') return esc(v || '');
+  if (!isFinite(+v)) return '<span class="div0">#DIV/0!</span>';
+  if (fmt === 'int')  return Math.round(+v).toLocaleString('ja-JP');
+  if (fmt === 'dec1') return (+v).toFixed(1);
+  if (fmt === 'pct') {
+    const n = +v;
+    return (n < 1 ? n * 100 : n).toFixed(2) + '%';
+  }
+  if (fmt === 'pct0') {
+    const n = +v;
+    return Math.round(n < 1 ? n * 100 : n) + '%';
+  }
+  if (fmt === 'pct2') {
+    const n = +v;
+    return (n < 1 ? n * 100 : n).toFixed(2) + '%';
+  }
+  return esc(String(v));
+}
+
+function esc(s) {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function toNum(v) {
+  if (v === null || v === undefined || v === '') return NaN;
+  return parseFloat(String(v).replace(/[¥, %\s]/g, ''));
+}
+
+function parseDate(s) {
+  if (!s) return null;
+  let m = s.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  m = s.match(/(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})/);
+  if (m) return new Date(+m[1], +m[2]-1, +m[3]);
+  return null;
+}
+
+function colAlpha(n) {
+  let s = '', i = n + 1;
+  while (i > 0) { s = String.fromCharCode(64 + (i % 26 || 26)) + s; i = Math.floor((i-1) / 26); }
+  return s;
+}
+
+/* ═══════════════════════════
+   DATES / MISC
+═══════════════════════════ */
+function parseLocalDate(str, endOfDay) {
+  // Parse date string as LOCAL time (avoids UTC midnight timezone bug)
+  var m = str.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  if (endOfDay) return new Date(+m[1], +m[2]-1, +m[3], 23, 59, 59);
+  return new Date(+m[1], +m[2]-1, +m[3], 0, 0, 0);
+}
+
+function toISO(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function initDateRange(rows) {
+  const valid = rows.filter(function(r) { return !r._tot && r._d; }).map(function(r) { return r._d; }).sort(function(a,b){return a-b;});
+  if (!valid.length) return;
+  const ef = document.getElementById('d-from'), et = document.getElementById('d-to');
+  if (!ef.value) ef.value = toISO(valid[0]);
+  if (!et.value) et.value = toISO(valid[valid.length-1]);
+}
+
+function clearDates() {
+  document.getElementById('d-from').value = '';
+  document.getElementById('d-to').value   = '';
+  renderTable();
+}
+
+function showLoading() {
+  document.getElementById('tscroll').innerHTML =
+    '<div class="empty-msg"><span class="spinner"></span>読み込み中…</div>';
+}
+
+function showEmpty(msg) {
+  document.getElementById('tscroll').innerHTML =
+    '<div class="empty-msg">' + esc(msg) + '</div>';
+}
+
+async function doRefresh() {
+  if (!curAcc) return;
+  // キャッシュ全クリア（合計・総合タブも含む）
+  rawCache = {};
+  mergedCache = {};
+  await loadAcc(curAcc);
+}
+
+function doCSV() {
+  const rows = mergedCache[curAcc];
+  if (!rows) return;
+  const fromStr = document.getElementById('d-from').value;
+  const toStr   = document.getElementById('d-to').value;
+  const from = fromStr ? new Date(fromStr) : null;
+  const to   = toStr   ? new Date(toStr + 'T23:59:59') : null;
+  const data = rows.filter(function(r) {
+    if (r._tot) return false;
+    if (from && r._d && r._d < from) return false;
+    if (to   && r._d && r._d > to)   return false;
+    return true;
+  });
+
+  const hdrs = COLS.map(function(c) { return c.label; });
+  const lines = [hdrs.join(',')];
+  data.forEach(function(r) {
+    lines.push(COLS.map(function(col) {
+      if (col.k === 'date') return '"' + (r.date || '').replace(/"/g, '""') + '"';
+      if (col.k === 'memo') {
+        const mk = curAcc + '::' + r.date;
+        return '"' + (memos[mk] || '').replace(/"/g, '""') + '"';
+      }
+      return isFinite(+r[col.k]) ? +r[col.k] : '#DIV/0!';
+    }).join(','));
+  });
+  const tot = calcTotal(data);
+  lines.push(COLS.map(function(col) {
+    if (col.k === 'date') return 'TOTAL';
+    if (col.k === 'memo') return '';
+    return isFinite(tot[col.k]) ? tot[col.k] : '#DIV/0!';
+  }).join(','));
+
+  const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'meta-daily-report-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+/* ═══════════════════════════
+   INIT
+═══════════════════════════ */
+window.addEventListener('load', function() {
+  memos = loadMemos();
+  // GAS URLを復元
+  var savedGas = localStorage.getItem('meta-ads-gas-url') || '';
+  if (savedGas) {
+    GAS_URL = savedGas;
+    document.getElementById('inp-gas').value = savedGas;
+  }
+  const saved = loadCfg();
+  if (saved) {
+    document.getElementById('inp-key').value = saved.key || '';
+    document.getElementById('inp-sid').value = saved.sid || '1CD1qBCGTtT7_eQlqdJm7Ra1s1cRI8D6KUWtQand6b3s';
+  }
+  // Enter key on inputs
+  document.getElementById('inp-key').addEventListener('keydown', function(e) { if (e.key === 'Enter') doConnect(); });
+  document.getElementById('inp-sid').addEventListener('keydown', function(e) { if (e.key === 'Enter') doConnect(); });
+  // 日付入力の最大値を今日に設定
+  var todayStr = new Date().toLocaleDateString('sv-SE');
+  var dTo = document.getElementById('d-to');
+  var dFrom = document.getElementById('d-from');
+  if (dTo) dTo.max = todayStr;
+  if (dFrom) dFrom.max = todayStr;
+});
+</script>
+</body>
+</html>
