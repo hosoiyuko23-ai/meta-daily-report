@@ -84,6 +84,9 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; font-s
 .atab:hover { background: #e8eaed; border-color: #c7c7c7; }
 .atab.on { background: #fff; border-color: #c7c7c7; border-bottom-color: #fff; font-weight: 600; color: #202124; }
 .atab.drag-over { border: 2px dashed #1a73e8 !important; background: #e8f0fe; }
+.ptab.drag-over { border: 2px dashed #1a73e8 !important; background: #e8f0fe; }
+.ptab[draggable="true"] { cursor: grab; }
+.ptab[draggable="true"]:active { cursor: grabbing; }
 .atab[draggable="true"] { cursor: grab; }
 .atab[draggable="true"]:active { cursor: grabbing; }
 .atab .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
@@ -683,23 +686,65 @@ function openMgr() {
 function buildProjTabs() {
   const bar = document.getElementById('proj-bar');
   bar.innerHTML = '';
+  // ── 総合タブを最左端に固定 ──
+  if (cfg.projects.length > 1) {
+    const gt = document.createElement('div');
+    gt.className = 'ptab';
+    gt.dataset.id = '__grand__';
+    gt.textContent = '📊 総合';
+    gt.onclick = function() { selectProj('__grand__'); };
+    bar.appendChild(gt);
+  }
+  // ── 案件タブ（ドラッグ&ドロップで並び替え可）──
   cfg.projects.forEach(function(p) {
     const t = document.createElement('div');
     t.className = 'ptab';
     t.dataset.id = p.id;
     t.textContent = p.name;
+    t.draggable = true;
+    t.style.cursor = 'grab';
     t.onclick = function() { selectProj(p.id); };
+    t.addEventListener('dragstart', function(e) {
+      e.dataTransfer.setData('text/plain', p.id);
+      t.classList.add('dragging');
+      t.style.opacity = '0.5';
+    });
+    t.addEventListener('dragend', function() {
+      t.classList.remove('dragging');
+      t.style.opacity = '';
+      document.querySelectorAll('.ptab').forEach(function(el) {
+        el.classList.remove('drag-over');
+      });
+    });
+    t.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      const dragging = document.querySelector('.ptab.dragging');
+      if (!dragging || dragging === t) return;
+      t.classList.add('drag-over');
+    });
+    t.addEventListener('dragleave', function() {
+      t.classList.remove('drag-over');
+    });
+    t.addEventListener('drop', function(e) {
+      e.preventDefault();
+      t.classList.remove('drag-over');
+      const fromId = e.dataTransfer.getData('text/plain');
+      if (!fromId || fromId === p.id) return;
+      const fromIdx = cfg.projects.findIndex(function(x) { return x.id === fromId; });
+      const toIdx   = cfg.projects.findIndex(function(x) { return x.id === p.id; });
+      if (fromIdx < 0 || toIdx < 0) return;
+      const moved = cfg.projects.splice(fromIdx, 1)[0];
+      cfg.projects.splice(toIdx, 0, moved);
+      saveCfg();
+      cloudSaveCfg(cfg);
+      buildProjTabs();
+      // 現在選択中タブを維持
+      document.querySelectorAll('.ptab').forEach(function(el) {
+        el.classList.toggle('on', el.dataset.id === curProj);
+      });
+    });
     bar.appendChild(t);
   });
-  // 総合タブ（複数プロジェクトがある場合のみ）
-  if (cfg.projects.length > 1) {
-    const t = document.createElement('div');
-    t.className = 'ptab';
-    t.dataset.id = '__grand__';
-    t.textContent = '📊 総合';
-    t.onclick = function() { selectProj('__grand__'); };
-    bar.appendChild(t);
-  }
 }
 
 function selectProj(id) {
@@ -755,10 +800,6 @@ function buildAccTabsGrand() {
   var t = document.createElement('div');
   t.className = 'atab on';
   t.dataset.id = '__grand__';
-  var dot = document.createElement('span');
-  dot.className = 'dot';
-  dot.style.background = '#1a73e8';
-  t.appendChild(dot);
   t.appendChild(document.createTextNode('全プロジェクト合計'));
   bar.appendChild(t);
 }
