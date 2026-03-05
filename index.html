@@ -83,6 +83,9 @@ body { font-family: 'Helvetica Neue', Arial, 'Hiragino Sans', sans-serif; font-s
 .atab { height: 29px; padding: 0 13px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #444746; cursor: pointer; border: 1px solid transparent; border-bottom: none; border-radius: 3px 3px 0 0; position: relative; top: 1px; white-space: nowrap; }
 .atab:hover { background: #e8eaed; border-color: #c7c7c7; }
 .atab.on { background: #fff; border-color: #c7c7c7; border-bottom-color: #fff; font-weight: 600; color: #202124; }
+.atab.drag-over { border: 2px dashed #1a73e8 !important; background: #e8f0fe; }
+.atab[draggable="true"] { cursor: grab; }
+.atab[draggable="true"]:active { cursor: grabbing; }
 .atab .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
 /* Date filter */
