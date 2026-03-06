@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- built: 2026-03-06 05:03:09 -->
+<!-- built: 2026-03-06 05:07:47 -->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -151,13 +151,15 @@ td.memo-cell input:focus { background: #fff; border: 1px solid #dadce0; }
 
 /* ── テーブルエリア ── */
 .tscroll-wrap { flex:1; position:relative; overflow:hidden; min-height:0; }
-.tscroll { position:absolute; top:0; left:0; right:14px; bottom:14px; overflow:hidden; }
+.tscroll { position:absolute; top:0; left:0; right:14px; bottom:14px; overflow:scroll; scrollbar-width:none; }
 .tscroll table { display:block; }
 #scroll-x-track { position:absolute; bottom:0; left:0; right:14px; height:14px; background:#d0d0d0; cursor:pointer; }
 #scroll-x-thumb { position:absolute; top:2px; height:10px; background:#888; border-radius:5px; cursor:grab; min-width:30px; }
 #scroll-y-track { position:absolute; top:0; right:0; width:14px; bottom:14px; background:#d0d0d0; cursor:pointer; }
 #scroll-y-thumb { position:absolute; left:2px; width:10px; background:#888; border-radius:5px; cursor:grab; min-height:30px; }
 #scroll-corner { position:absolute; bottom:0; right:0; width:14px; height:14px; background:#b0b0b0; }
+
+.tscroll::-webkit-scrollbar { display:none; }
 </style>
 <script>
 // 日付maxを今日に設定（即時実行）
