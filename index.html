@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- built: 2026-03-06 05:52:28 -->
+<!-- built: 2026-03-06 06:03:19 -->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -74,14 +74,14 @@ body { font-family:'Helvetica Neue',Arial,'Hiragino Sans',sans-serif; font-size:
 .tbtn.blue:hover { background: #1557b0; }
 
 /* Project tabs */
-.proj-bar { height: 33px; background: #fff; border-bottom: 2px solid #e0e0e0; display: flex; align-items: flex-end; padding: 0 8px; overflow-x: auto; flex-shrink: 0; }
+.proj-bar { height: 40px; background: #fff; border-bottom: 2px solid #e0e0e0; display: flex; align-items: flex-end; padding: 0 8px 4px; overflow-x: scroll; flex-shrink: 0; }
 .proj-bar::-webkit-scrollbar { height: 0; }
 .ptab { height: 29px; padding: 0 14px; display: flex; align-items: center; font-size: 12px; color: #5f6368; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; margin-bottom: -2px; }
 .ptab:hover { color: #202124; }
 .ptab.on { color: #1a73e8; border-bottom-color: #1a73e8; font-weight: 600; }
 
 /* Account tabs (Sheets style) */
-.acc-bar { height: 33px; background: #f1f3f4; border-bottom: 1px solid #c7c7c7; display: flex; align-items: flex-end; padding: 0 6px; gap: 2px; overflow-x: auto; flex-shrink: 0; }
+.acc-bar { height: 40px; background: #f1f3f4; border-bottom: 1px solid #c7c7c7; display: flex; align-items: flex-end; padding: 0 6px 4px; gap: 2px; overflow-x: scroll; flex-shrink: 0; }
 .acc-bar::-webkit-scrollbar { height: 0; }
 .atab { height: 29px; padding: 0 13px; display: flex; align-items: center; gap: 6px; font-size: 12px; color: #444746; cursor: pointer; border: 1px solid transparent; border-bottom: none; border-radius: 3px 3px 0 0; position: relative; top: 1px; white-space: nowrap; }
 .atab:hover { background: #e8eaed; border-color: #c7c7c7; }
@@ -159,6 +159,13 @@ td.memo-cell input:focus { background: #fff; border: 1px solid #dadce0; }
 #scroll-corner { position:absolute; bottom:0; right:0; width:14px; height:14px; background:#b0b0b0; }
 
 .tscroll::-webkit-scrollbar { display:none; }
+
+.acc-bar::-webkit-scrollbar,
+.proj-bar::-webkit-scrollbar { height:6px; -webkit-appearance:none; }
+.acc-bar::-webkit-scrollbar-thumb,
+.proj-bar::-webkit-scrollbar-thumb { background:#aaa; border-radius:3px; }
+.acc-bar::-webkit-scrollbar-track,
+.proj-bar::-webkit-scrollbar-track { background:#e0e0e0; }
 </style>
 <script>
 // 日付maxを今日に設定（即時実行）
@@ -167,8 +174,8 @@ document.addEventListener('DOMContentLoaded', function() {
   var s = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
   var df = document.getElementById('d-from');
   var dt = document.getElementById('d-to');
-  if (df) df.max = s;
-  if (dt) dt.max = s;
+  if (dt) { dt.max = s; if (dt.value > s) dt.value = s; }
+  if (df) { df.max = s; if (df.value > s) df.value = ''; }
 });
 </script>
 </head>
@@ -725,8 +732,8 @@ function doSave() {
     var s = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
     var df = document.getElementById('d-from');
     var dt = document.getElementById('d-to');
-    if (df) df.max = s;
-    if (dt) dt.max = s;
+    if (dt) { dt.max = s; if (dt.value > s) { dt.value = s; } }
+    if (df) { df.max = s; if (df.value > s) df.value = ''; }
   })();
 }
 
@@ -1135,12 +1142,12 @@ function buildRows(acc) {
    RENDER
 ═══════════════════════════ */
 function renderTable() {
-  // 日付inputのmax値を今日に設定（毎回更新）
+  // 日付inputのmax値を今日に設定し、超過valueはリセット
   var _today = new Date().toLocaleDateString('sv-SE');
   var _dTo = document.getElementById('d-to');
   var _dFrom = document.getElementById('d-from');
-  if (_dTo && !_dTo.max) _dTo.max = _today;
-  if (_dFrom && !_dFrom.max) _dFrom.max = _today;
+  if (_dTo) { _dTo.max = _today; if (_dTo.value > _today) _dTo.value = _today; }
+  if (_dFrom) { _dFrom.max = _today; if (_dFrom.value > _today) _dFrom.value = ''; }
   const rows = mergedCache[curAcc];
   if (!rows) return;
   // 合計・総合タブはメモ列を非表示
