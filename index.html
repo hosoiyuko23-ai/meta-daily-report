@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- built: 2026-03-07 02:49:02 -->
+<!-- built: 2026-03-07 03:49:00 -->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -1218,7 +1218,6 @@ function renderTable() {
   const thead = document.createElement('thead');
   const hr = document.createElement('tr');
   COLS.forEach(function(col) {
-    if (isTotalTab && col.k === 'memo') return; // 合計タブはメモ列スキップ
     const th = document.createElement('th');
     if (isTotalTab) {
       th.style.padding = '3px 5px';
@@ -1262,7 +1261,6 @@ function renderTable() {
     data.forEach(function(r, ri) {
       const tr = document.createElement('tr');
       COLS.forEach(function(col) {
-        if (isTotalTab && col.k === 'memo') return; // 合計タブはメモ列スキップ
         const td = document.createElement('td');
         if (col.k === 'date') {
           td.textContent = r.date;
@@ -1278,15 +1276,15 @@ function renderTable() {
           const inp = document.createElement('input');
           inp.type = 'text';
           inp.placeholder = 'メモ…';
-          const mk = curAcc + '::' + r.date;
+          const mk = (isTotalTab ? '__total__' : curAcc) + '::' + r.date;
           inp.value = memos[mk] || '';
           inp.addEventListener('change', (function(dateStr) {
             return function() {
-              const mk2 = curAcc + '::' + dateStr;
+              const mk2 = (isTotalTab ? '__total__' : curAcc) + '::' + dateStr;
               if (this.value) memos[mk2] = this.value;
               else delete memos[mk2];
               saveMemos();
-              cloudSaveMemo(curAcc, dateStr, this.value); // クラウドにも保存
+              cloudSaveMemo(isTotalTab ? '__total__' : curAcc, dateStr, this.value); // クラウドにも保存
             };
           })(r.date));
           td.appendChild(inp);
@@ -1303,14 +1301,25 @@ function renderTable() {
     const tr = document.createElement('tr');
     tr.className = 'totrow';
     COLS.forEach(function(col) {
-      if (isTotalTab && col.k === 'memo') return; // 合計タブはメモ列スキップ
       const td = document.createElement('td');
       if (isTotalTab) { td.style.padding = '2px 5px'; td.style.fontSize = '11.5px'; }
       if (col.k === 'date') {
         td.textContent = 'TOTAL';
         td.style.textAlign = 'left';
       } else if (col.k === 'memo') {
-        td.textContent = '';
+        td.className = 'memo-cell';
+        const totInp = document.createElement('input');
+        totInp.type = 'text';
+        totInp.className = 'memo-inp';
+        totInp.placeholder = 'メモ…';
+        const totMk = (isTotalTab ? '__total__' : curAcc) + '::__totrow__';
+        totInp.value = memos[totMk] || '';
+        totInp.addEventListener('change', function() {
+          if (this.value) memos[totMk] = this.value;
+          else delete memos[totMk];
+          saveMemos();
+        });
+        td.appendChild(totInp);
       } else {
         td.innerHTML = formatVal(col.fmt, tot[col.k]);
       }
@@ -1323,8 +1332,7 @@ function renderTable() {
   tscroll.appendChild(tbl);
   if (window._updateScrollThumbs) setTimeout(window._updateScrollThumbs, 50);
   // 横スクロール強制: 全子要素にmin-widthを付与
-  var minW = COLS.filter(function(col){ return !(isTotalTab && col.k==='memo'); })
-                 .reduce(function(s,col){ return s+(col.w||80); }, 0) + 160;
+  var minW = COLS.reduce(function(s,col){ return s+(col.w||80); }, 0) + 160;
   var mwPx = minW + 'px';
   tbl.style.width = mwPx;
   tbl.style.minWidth = mwPx;
